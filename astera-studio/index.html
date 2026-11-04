@@ -237,50 +237,136 @@ svg{flex-shrink:0}ul,ol{list-style:none}a{text-decoration:none;color:inherit}
 .filter-actions{display:flex;gap:8px;justify-content:flex-end}
 
 /* ══════════════════════════════════════════════════
-   PIPELINE DETAIL VIEW
+   PIPELINE DETAIL VIEW — full rewrite
 ══════════════════════════════════════════════════ */
-.pipeline-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-.pipeline-toolbar h2{font-size:18px;font-weight:700;color:var(--text-heading);flex:1}
-.pipeline-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
-.pipeline-tab{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--radius-pill);
-  font-size:13px;font-weight:500;color:var(--text-body);background:var(--bg-input);cursor:pointer;
-  transition:background .15s,color .15s;min-height:40px}
-.pipeline-tab.active{background:var(--primary);color:#fff;box-shadow:var(--shadow-btn)}
-.pipeline-stats{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-.pstat{flex:1;min-width:100px;display:flex;flex-direction:column;gap:2px}
-.pstat-label{font-size:11px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
-.pstat-value{font-size:16px;font-weight:600;color:var(--text-heading)}
-.pstat-value.ok{color:var(--accent-green)}.pstat-value.err{color:var(--accent-coral)}
 
-/* Step flow */
-.step-flow{display:flex;flex-direction:column}
-.step-item{display:flex;gap:16px}
-.step-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
-.step-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-  font-size:18px;flex-shrink:0;z-index:1}
-.step-line{width:2px;flex:1;min-height:20px;background:linear-gradient(to bottom,var(--primary-light),transparent);margin:2px 0}
-.step-item:last-child .step-line{display:none}
-.step-body{flex:1;margin-bottom:20px;min-width:0}
-.step-card{background:var(--bg-card);border-radius:18px;box-shadow:var(--shadow-card);padding:14px 18px;
-  transition:box-shadow .18s;cursor:pointer}
-.step-card:hover{box-shadow:0 4px 32px rgba(79,116,184,.14)}
-.step-card.failed-step{border-left:3px solid var(--accent-coral)}
-.step-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.step-name{font-size:14px;font-weight:600;color:var(--text-heading);flex:1}
-.step-duration{font-size:12px;color:var(--text-muted)}
-.step-meta{display:flex;gap:16px;flex-wrap:wrap}
-.step-meta-item{display:flex;flex-direction:column;gap:2px}
-.smeta-label{font-size:10px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
-.smeta-value{font-size:13px;font-weight:600;color:var(--text-heading)}
-.smeta-value.red{color:var(--accent-coral)}
-.error-card{background:var(--accent-coral-bg);border-radius:14px;padding:12px 16px;margin-top:12px;display:flex;gap:10px;align-items:flex-start}
-.error-icon{width:28px;height:28px;background:var(--accent-coral);border-radius:50%;display:flex;align-items:center;
-  justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
-.error-text{font-size:13px;color:var(--accent-coral);line-height:1.5}
-.error-text strong{font-weight:600;display:block;margin-bottom:2px}
-.log-box{background:#1E2340;border-radius:14px;padding:14px 16px;font-family:'Courier New',monospace;
-  font-size:11.5px;color:#9CA8D0;line-height:1.7;overflow-x:auto;margin-top:12px}
-.log-line-ok{color:#4CAF6E}.log-line-err{color:#E8455F}.log-line-info{color:#5B7FC7}
+/* Selector / status header */
+.pl-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.pl-tab{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--radius-pill);
+  font-size:13px;font-weight:500;color:var(--text-body);background:var(--bg-input);cursor:pointer;
+  transition:background .15s,color .15s;min-height:44px;border:2px solid transparent}
+.pl-tab.active{background:var(--primary);color:#fff;box-shadow:var(--shadow-btn)}
+.pl-status-bar{display:flex;align-items:center;gap:14px;padding:14px 20px;border-radius:var(--radius-card);
+  background:var(--bg-card);box-shadow:var(--shadow-card);margin-bottom:16px;flex-wrap:wrap}
+.pl-status-bar h2{font-size:15px;font-weight:700;color:var(--text-heading);flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-meta{font-size:12px;color:var(--text-muted);white-space:nowrap}
+
+/* Desktop: canvas + side panel */
+.pl-canvas-layout{display:flex;gap:16px;height:calc(92dvh - var(--topbar-h) - 185px);min-height:380px}
+.pl-canvas-wrap{flex:1;position:relative;background:var(--bg-card);border-radius:var(--radius-card);
+  box-shadow:var(--shadow-card);overflow:hidden;min-width:0}
+.pl-svg-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.pl-nodes{position:absolute;inset:0;overflow:auto}
+
+/* Step nodes */
+.pl-node{position:absolute;width:184px;cursor:pointer;user-select:none}
+.pl-node-card{background:#fff;border-radius:16px;box-shadow:var(--shadow-card);
+  padding:12px 14px;border:2px solid transparent;transition:border-color .2s,box-shadow .2s;position:relative}
+.pl-node-card:hover,.pl-node-card.selected{border-color:var(--primary);box-shadow:0 4px 24px var(--primary-glow)}
+.pl-node-card.failed-node{border-left:4px solid var(--accent-coral);background:var(--accent-coral-bg)}
+.pl-node-card.selected.failed-node{box-shadow:0 4px 24px rgba(232,69,95,.25)}
+.pl-node-icon{font-size:19px;margin-bottom:5px}
+.pl-node-name{font-size:12px;font-weight:600;color:var(--text-heading);margin-bottom:8px;line-height:1.3}
+.pl-node-badges{display:flex;gap:5px;flex-wrap:wrap}
+.pl-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 7px;
+  border-radius:var(--radius-pill)}
+.pl-badge.in {background:var(--accent-blue-bg);  color:var(--accent-blue)}
+.pl-badge.out{background:var(--accent-green-bg); color:var(--accent-green)}
+.pl-badge.out.zero{background:var(--accent-coral-bg);color:var(--accent-coral)}
+
+/* Status dot on node */
+.pl-node-dot{position:absolute;top:-6px;right:-6px;width:14px;height:14px;border-radius:50%;
+  border:2px solid var(--bg-card)}
+.dot-succeeded{background:var(--accent-green)}
+.dot-failed   {background:var(--accent-coral)}
+.dot-running  {background:var(--accent-blue);animation:pulse 1.4s infinite}
+.dot-skipped  {background:var(--text-muted)}
+
+/* Right side panel */
+.pl-side-panel{width:296px;flex-shrink:0;background:var(--bg-card);border-radius:var(--radius-card);
+  box-shadow:var(--shadow-card);display:flex;flex-direction:column;overflow:hidden}
+.pl-panel-empty{display:flex;align-items:center;justify-content:center;color:var(--text-muted);
+  font-size:13px;text-align:center;padding:32px 20px;height:100%}
+.pl-panel-header{padding:16px 20px 12px;border-bottom:1px solid var(--bg-input);flex-shrink:0}
+.pl-panel-header h3{font-size:14px;font-weight:700;color:var(--text-heading);margin-bottom:2px}
+.pl-panel-header .sub{font-size:11px;color:var(--text-muted)}
+.pl-panel-body{flex:1;overflow-y:auto;padding:14px 18px}
+.pl-panel-body::-webkit-scrollbar{width:4px}
+.pl-panel-body::-webkit-scrollbar-thumb{background:var(--primary-light);border-radius:2px}
+.pl-panel-footer{padding:10px 18px;border-top:1px solid var(--bg-input);display:flex;gap:8px;flex-shrink:0}
+
+/* Shared form fields */
+.field-group{margin-bottom:14px}
+.field-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:5px;display:block}
+.field-input{width:100%;background:var(--bg-input);border-radius:var(--radius-sm);padding:9px 12px;
+  font-size:13px;color:var(--text-heading);font-family:var(--font);border:1.5px solid transparent;
+  transition:border-color .15s;min-height:40px;display:block}
+.field-input:focus{border-color:var(--primary);outline:none}
+.field-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 0;margin-bottom:4px}
+.toggle-label{font-size:13px;color:var(--text-heading);font-weight:500}
+/* Custom toggle */
+.tog{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.tog-track{position:absolute;inset:0;border-radius:11px;background:var(--text-muted);cursor:pointer;transition:background .2s}
+.tog input:checked+.tog-track{background:var(--primary)}
+.tog-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;
+  background:#fff;transition:transform .2s;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.tog input:checked~.tog-thumb{transform:translateX(18px)}
+/* Error box */
+.pl-err-box{background:var(--accent-coral-bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px}
+.pl-err-box strong{display:block;font-size:12px;color:var(--accent-coral);font-weight:700;margin-bottom:4px}
+.pl-err-box p{font-size:12px;color:var(--accent-coral);line-height:1.5}
+/* Log box */
+.pl-log{background:#1E2340;border-radius:12px;padding:12px 14px;font-family:'Courier New',monospace;
+  font-size:11px;color:#9CA8D0;line-height:1.7;overflow-x:auto;margin-bottom:14px}
+.log-ok{color:#4CAF6E}.log-err{color:#E8455F}.log-inf{color:#5B7FC7}
+
+/* Mobile stepper (only on <768) */
+.pl-stepper{display:none;flex-direction:column}
+.pl-stepper-row{display:flex;gap:14px}
+.pl-stepper-left{display:flex;flex-direction:column;align-items:center;width:30px;flex-shrink:0}
+.pl-stepper-dot-wrap{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:14px;border:2px solid var(--bg-app);flex-shrink:0;position:relative}
+.pl-stepper-vline{width:2px;flex:1;min-height:12px;background:var(--primary-light)}
+.pl-stepper-row:last-child .pl-stepper-vline{display:none}
+.pl-stepper-card{flex:1;background:var(--bg-card);border-radius:16px;box-shadow:var(--shadow-card);
+  padding:13px 15px;margin-bottom:14px;cursor:pointer;border:2px solid transparent;transition:border-color .18s}
+.pl-stepper-card:active{border-color:var(--primary)}
+.pl-stepper-card.failed-m{border-color:var(--accent-coral)}
+.pl-sc-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pl-sc-name{font-size:14px;font-weight:600;color:var(--text-heading);flex:1}
+.pl-sc-badges{display:flex;gap:5px;flex-wrap:wrap}
+
+/* Bottom sheet */
+.bs-overlay{display:none;position:fixed;inset:0;background:rgba(58,70,112,.35);z-index:600;align-items:flex-end}
+.bs-overlay.open{display:flex}
+.bs-sheet{background:var(--bg-card);border-radius:var(--radius-card) var(--radius-card) 0 0;
+  width:100%;max-height:88dvh;display:flex;flex-direction:column;
+  box-shadow:0 -8px 40px rgba(58,70,112,.18);
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1);
+  padding-bottom:env(safe-area-inset-bottom,0px)}
+.bs-overlay.open .bs-sheet{transform:translateY(0)}
+.bs-drag{width:36px;height:4px;background:var(--text-muted);border-radius:2px;
+  margin:12px auto 2px;opacity:.4;cursor:grab;flex-shrink:0}
+.bs-head{padding:8px 18px 12px;border-bottom:1px solid var(--bg-input);flex-shrink:0;display:flex;align-items:center;gap:10px}
+.bs-head h3{font-size:16px;font-weight:700;color:var(--text-heading);flex:1}
+.bs-close{width:32px;height:32px;border-radius:50%;background:var(--bg-input);
+  display:flex;align-items:center;justify-content:center;color:var(--text-muted)}
+.bs-close:hover{background:var(--primary-light);color:var(--primary)}
+.bs-body{flex:1;overflow-y:auto;padding:14px 18px}
+.bs-foot{padding:12px 18px;border-top:1px solid var(--bg-input);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+.bs-rerun{justify-content:center}
+
+/* Responsive */
+@media(max-width:767px){
+  .pl-canvas-layout{display:none}
+  .pl-stepper{display:flex}
+}
+@media(min-width:768px){
+  .bs-overlay{display:none!important}
+}
 
 /* ═══════════════════ TOAST ═══════════════════ */
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
@@ -503,22 +589,54 @@ svg{flex-shrink:0}ul,ol{list-style:none}a{text-decoration:none;color:inherit}
 
       <!-- ══════════════ PIPELINE DETAIL VIEW ══════════════ -->
       <div class="view" id="view-pipeline">
-        <div class="pipeline-toolbar">
-          <h2>Pipeline Detail</h2>
-          <span id="active-pipeline-pill"></span>
-          <div style="flex:1"></div>
-          <button class="btn-ghost">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
-            Re-run
-          </button>
-          <button class="btn-primary">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            View Logs
-          </button>
+
+        <!-- Pipeline selector -->
+        <div class="pl-selector" id="pl-selector"></div>
+
+        <!-- Status header -->
+        <div class="pl-status-bar" id="pl-status-bar">
+          <h2 id="pl-name">—</h2>
+          <span id="pl-pill"></span>
+          <span class="pl-meta" id="pl-lastrun"></span>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button class="btn-ghost" id="pl-rerun-btn" onclick="plRerun()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
+              Re-run
+            </button>
+            <button class="btn-primary" onclick="showToast('Logs viewer coming soon')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><polyline points="8 2 8 6"/><polyline points="16 2 16 6"/></svg>
+              View Logs
+            </button>
+          </div>
         </div>
-        <div class="pipeline-tabs" id="pipeline-tabs"></div>
-        <div class="pipeline-stats" id="pipeline-stats"></div>
-        <div class="step-flow" id="step-flow"></div>
+
+        <!-- DESKTOP: SVG canvas + side panel -->
+        <div class="pl-canvas-layout">
+          <div class="pl-canvas-wrap" id="pl-canvas-wrap">
+            <!-- SVG connectors rendered by JS -->
+            <svg class="pl-svg-canvas" id="pl-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+            <!-- Nodes rendered by JS -->
+            <div class="pl-nodes" id="pl-nodes"></div>
+          </div>
+          <!-- Side panel -->
+          <div class="pl-side-panel" id="pl-side-panel">
+            <div class="pl-panel-empty" id="pl-panel-empty">
+              <div>
+                <div style="font-size:28px;margin-bottom:8px">👈</div>
+                Click a node to<br/>inspect &amp; edit
+              </div>
+            </div>
+            <div id="pl-panel-content" style="display:none;flex:1;display:flex;flex-direction:column;overflow:hidden">
+              <div class="pl-panel-header" id="pl-panel-header"></div>
+              <div class="pl-panel-body" id="pl-panel-body"></div>
+              <div class="pl-panel-footer" id="pl-panel-footer"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOBILE: Vertical stepper -->
+        <div class="pl-stepper" id="pl-stepper"></div>
+
       </div>
 
     </div><!-- /view-container -->
@@ -532,6 +650,27 @@ svg{flex-shrink:0}ul,ol{list-style:none}a{text-decoration:none;color:inherit}
   </nav>
 
 </div><!-- /app-shell -->
+
+<!-- Bottom sheet (mobile step editor) -->
+<div class="bs-overlay" id="bs-overlay" onclick="if(event.target===this)closeBS()">
+  <div class="bs-sheet" id="bs-sheet">
+    <div class="bs-drag" id="bs-drag"></div>
+    <div class="bs-head">
+      <h3 id="bs-title">Step</h3>
+      <button class="bs-close" onclick="closeBS()" aria-label="Close">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="bs-body" id="bs-body"></div>
+    <div class="bs-foot" id="bs-foot">
+      <button class="btn-primary bs-rerun" id="bs-rerun-btn" onclick="plRerunFromStep()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
+        Re-run from this step
+      </button>
+      <button class="btn-ghost" style="justify-content:center" onclick="closeBS()">Done</button>
+    </div>
+  </div>
+</div>
 
 <!-- Filter overlay -->
 <div class="filter-overlay" id="filter-overlay" onclick="if(event.target===this)closeFilter()">
@@ -995,98 +1134,423 @@ function handleRerun() {
 }
 
 /* ═══════════════════════════════════════════════════
-   PIPELINE DETAIL
+   PIPELINE DETAIL — full implementation
 ═══════════════════════════════════════════════════ */
+
+/* ---- shared state ---- */
+let selectedStepIdx = null;   // which step node is selected (desktop)
+let bsStepIdx = null;         // which step is open in bottom sheet (mobile)
+
+/* ---- entry point called by switchView ---- */
 function renderPipeline() {
-  renderPipelineTabs();
-  renderActivePipeline();
+  buildPipelineSelector();
+  buildStatusBar();
+  if (window.innerWidth >= 768) {
+    buildDesktopCanvas();
+  } else {
+    buildMobileStepper();
+  }
 }
 
-function renderPipelineTabs() {
-  const wrap = document.getElementById('pipeline-tabs');
+/* ---- Pipeline selector tabs ---- */
+function buildPipelineSelector() {
+  const wrap = document.getElementById('pl-selector');
   wrap.innerHTML = '';
-  DATA.pipelines.forEach((p, idx) => {
+  DATA.pipelines.forEach((p, i) => {
     const sc = p.status.toLowerCase();
     const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-running';
     const btn = document.createElement('button');
-    btn.className = 'pipeline-tab' + (idx === activePipelineIdx ? ' active' : '');
+    btn.className = 'pl-tab' + (i === activePipelineIdx ? ' active' : '');
     btn.innerHTML = `${p.name} <span class="status-pill ${cls}"><span class="dot"></span>${p.status}</span>`;
-    btn.onclick = () => { activePipelineIdx = idx; renderPipeline(); };
+    btn.onclick = () => { activePipelineIdx = i; selectedStepIdx = null; renderPipeline(); };
     wrap.appendChild(btn);
   });
 }
 
-function renderActivePipeline() {
+/* ---- Status header ---- */
+function buildStatusBar() {
   const p = DATA.pipelines[activePipelineIdx];
   const sc = p.status.toLowerCase();
   const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-running';
-  document.getElementById('active-pipeline-pill').innerHTML = `<span class="status-pill ${cls}"><span class="dot"></span>${p.status}</span>`;
+  document.getElementById('pl-name').textContent = p.name;
+  document.getElementById('pl-pill').innerHTML = `<span class="status-pill ${cls}"><span class="dot"></span>${p.status}</span>`;
+  document.getElementById('pl-lastrun').textContent = `Last run: ${p.lastRun} · ${p.duration}`;
+}
 
-  // Stats
-  const sw = document.getElementById('pipeline-stats');
-  sw.innerHTML = '';
-  [{l:'Last Run',v:p.lastRun},{l:'Duration',v:p.duration},
-   {l:'Rows In',v:p.rowsIn.toLocaleString()},
-   {l:'Rows Out',v:p.rowsOut===0&&p.status==='Failed'?'—':p.rowsOut.toLocaleString(),c:p.status==='Failed'?'err':'ok'},
-   {l:'Status',v:p.status,c:p.status==='Succeeded'?'ok':'err'}
-  ].forEach(s => {
-    const d = document.createElement('div');
-    d.className = 'card pstat';
-    d.innerHTML = `<div class="pstat-label">${s.l}</div><div class="pstat-value ${s.c||''}">${s.v}</div>`;
-    sw.appendChild(d);
+/* ══════════════════════════════════
+   DESKTOP — SVG Canvas
+══════════════════════════════════ */
+const NODE_W = 184, NODE_H = 110, COL_GAP = 80, ROW_Y = 60;
+// Steps arranged horizontally: x positions
+
+function buildDesktopCanvas() {
+  const pipeline = DATA.pipelines[activePipelineIdx];
+  const steps = pipeline.steps;
+  const svg   = document.getElementById('pl-svg');
+  const nodes = document.getElementById('pl-nodes');
+  svg.innerHTML = '';
+  nodes.innerHTML = '';
+
+  const totalW = steps.length * (NODE_W + COL_GAP) - COL_GAP + 80;
+  const totalH = NODE_H + 120;
+  nodes.style.width  = totalW + 'px';
+  nodes.style.height = totalH + 'px';
+  svg.setAttribute('width',  totalW);
+  svg.setAttribute('height', totalH);
+  svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
+
+  const positions = steps.map((_, i) => ({
+    x: 40 + i * (NODE_W + COL_GAP),
+    y: ROW_Y
+  }));
+
+  // Draw curved SVG connectors between nodes
+  steps.forEach((step, i) => {
+    if (i === 0) return;
+    const from = positions[i - 1];
+    const to   = positions[i];
+    const x1 = from.x + NODE_W;
+    const y1 = from.y + NODE_H / 2;
+    const x2 = to.x;
+    const y2 = to.y + NODE_H / 2;
+    const mx = (x1 + x2) / 2;
+
+    // Determine connector color
+    const prevStatus = steps[i - 1].status.toLowerCase();
+    const color = prevStatus === 'failed' ? '#E8455F'
+                : prevStatus === 'skipped' ? '#9BA8C3'
+                : '#D1DCF5';
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '2.5');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-dasharray', prevStatus === 'skipped' ? '5 4' : 'none');
+
+    // Arrow head
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const aw = 7;
+    const ax1 = x2 - aw * Math.cos(angle - 0.4);
+    const ay1 = y2 - aw * Math.sin(angle - 0.4);
+    const ax2 = x2 - aw * Math.cos(angle + 0.4);
+    const ay2 = y2 - aw * Math.sin(angle + 0.4);
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    arrow.setAttribute('points', `${x2},${y2} ${ax1},${ay1} ${ax2},${ay2}`);
+    arrow.setAttribute('fill', color);
+    svg.appendChild(path);
+    svg.appendChild(arrow);
+
+    // Row-in → row-out badge on connector midpoint
+    const foreignEl = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+    foreignEl.setAttribute('x', mx - 28);
+    foreignEl.setAttribute('y', y1 - 11);
+    foreignEl.setAttribute('width', 56);
+    foreignEl.setAttribute('height', 22);
+    const span = document.createElement('span');
+    span.style.cssText = 'display:block;text-align:center;font-size:9px;font-weight:700;color:#9BA8C3;font-family:Plus Jakarta Sans,sans-serif;padding:3px 6px;background:#EEF2FB;border-radius:8px;white-space:nowrap;width:100%';
+    span.textContent = steps[i-1].rowsOut.toLocaleString();
+    foreignEl.appendChild(span);
+    svg.appendChild(foreignEl);
   });
 
-  // Steps
-  const flow = document.getElementById('step-flow');
-  flow.innerHTML = '';
-  p.steps.forEach(step => {
-    const s = step.status.toLowerCase();
-    const sCls = s==='succeeded'?'pill-succeeded':s==='failed'?'pill-failed':'pill-scheduled';
-    const isFailed = s==='failed';
+  // Draw nodes
+  steps.forEach((step, i) => {
+    const pos = positions[i];
+    const sc = step.status.toLowerCase();
+    const dotCls = sc === 'succeeded' ? 'dot-succeeded'
+                 : sc === 'failed'    ? 'dot-failed'
+                 : sc === 'running'   ? 'dot-running'
+                 : 'dot-skipped';
+    const failedCard = sc === 'failed' ? ' failed-node' : '';
 
-    let errorHTML = '';
-    if (step.error) {
-      errorHTML = `<div class="error-card"><div class="error-icon">!</div>
-        <div class="error-text"><strong>${step.error.title}</strong>${step.error.detail}</div></div>`;
-    }
+    const node = document.createElement('div');
+    node.className = 'pl-node';
+    node.style.left = pos.x + 'px';
+    node.style.top  = pos.y + 'px';
+    node.dataset.idx = i;
+    if (i === selectedStepIdx) node.querySelector && null; // set after innerHTML
 
-    let logHTML = '';
-    if (s === 'succeeded') {
-      logHTML = `<div class="log-box">
-        <div class="log-line-info">[INFO]  ${step.name} — ${step.note}</div>
-        <div class="log-line-ok">[OK]    ${step.rowsIn.toLocaleString()} → ${step.rowsOut.toLocaleString()} rows in ${step.duration}</div></div>`;
-    } else if (isFailed) {
-      logHTML = `<div class="log-box">
-        <div class="log-line-info">[INFO]  ${step.note}</div>
-        <div class="log-line-err">[ERROR] ${step.error?step.error.detail:'Unknown error'}</div>
-        <div class="log-line-err">[ABORT] 0 rows written</div></div>`;
-    }
-
-    const item = document.createElement('div');
-    item.className = 'step-item';
-    item.innerHTML = `
-      <div class="step-left">
-        <div class="icon-tile ${step.tile}" style="width:40px;height:40px;font-size:17px">${step.icon}</div>
-        <div class="step-line"></div>
-      </div>
-      <div class="step-body">
-        <div class="step-card ${isFailed?'failed-step':''}">
-          <div class="step-header">
-            <span class="step-name">${step.name}</span>
-            <span class="status-pill ${sCls}"><span class="dot"></span>${step.status}</span>
-            <span class="step-duration">⏱ ${step.duration}</span>
-          </div>
-          <div class="step-meta">
-            <div class="step-meta-item"><span class="smeta-label">Rows In</span><span class="smeta-value">${step.rowsIn.toLocaleString()}</span></div>
-            <div class="step-meta-item"><span class="smeta-label">Rows Out</span><span class="smeta-value ${isFailed?'red':''}">${step.rowsOut.toLocaleString()}</span></div>
-            <div class="step-meta-item" style="flex:1;min-width:120px"><span class="smeta-label">Note</span><span class="smeta-value" style="font-weight:400;font-size:12px;color:var(--text-body)">${step.note}</span></div>
-          </div>
-          ${errorHTML}${logHTML}
+    node.innerHTML = `
+      <div class="pl-node-card${failedCard}${i === selectedStepIdx ? ' selected' : ''}" id="plnode-${i}">
+        <div class="pl-node-dot ${dotCls}"></div>
+        <div class="pl-node-icon">${step.icon}</div>
+        <div class="pl-node-name">${step.name}</div>
+        <div class="pl-node-badges">
+          <span class="pl-badge in">↓ ${step.rowsIn.toLocaleString()}</span>
+          <span class="pl-badge out${step.rowsOut === 0 && sc !== 'succeeded' ? ' zero' : ''}">↑ ${step.rowsOut.toLocaleString()}</span>
         </div>
       </div>`;
-    flow.appendChild(item);
+    node.onclick = () => selectStep(i);
+    nodes.appendChild(node);
+  });
+
+  // Restore side panel
+  if (selectedStepIdx !== null) {
+    renderSidePanel(selectedStepIdx);
+  }
+}
+
+function selectStep(idx) {
+  selectedStepIdx = idx;
+  // Update node border highlights
+  document.querySelectorAll('.pl-node-card').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  renderSidePanel(idx);
+}
+
+/* ---- Side panel ---- */
+function renderSidePanel(idx) {
+  const step = DATA.pipelines[activePipelineIdx].steps[idx];
+  const empty = document.getElementById('pl-panel-empty');
+  const content = document.getElementById('pl-panel-content');
+  empty.style.display = 'none';
+  content.style.display = 'flex';
+
+  const sc = step.status.toLowerCase();
+  const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-scheduled';
+
+  document.getElementById('pl-panel-header').innerHTML = `
+    <h3>${step.icon} ${step.name}</h3>
+    <div class="sub">⏱ ${step.duration} &nbsp;·&nbsp;
+      <span class="status-pill ${cls}" style="font-size:11px;padding:2px 7px"><span class="dot"></span>${step.status}</span>
+    </div>`;
+
+  document.getElementById('pl-panel-body').innerHTML = buildEditorHTML(idx, 'panel');
+  document.getElementById('pl-panel-footer').innerHTML = `
+    <button class="btn-ghost" style="flex:1;justify-content:center" onclick="plRerunFromStep()">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
+      Re-run from here
+    </button>
+    <button class="btn-primary" style="flex:1;justify-content:center" onclick="applyStepEdits(${idx},'panel')">Save</button>`;
+}
+
+/* ══════════════════════════════════
+   MOBILE — Vertical Stepper
+══════════════════════════════════ */
+function buildMobileStepper() {
+  const pipeline = DATA.pipelines[activePipelineIdx];
+  const wrap = document.getElementById('pl-stepper');
+  wrap.innerHTML = '';
+
+  pipeline.steps.forEach((step, i) => {
+    const sc = step.status.toLowerCase();
+    const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-scheduled';
+    const failedCls = sc === 'failed' ? ' failed-m' : '';
+    const dotBg = sc === 'succeeded' ? 'var(--accent-green)'
+                : sc === 'failed'    ? 'var(--accent-coral)'
+                : sc === 'running'   ? 'var(--accent-blue)'
+                : 'var(--text-muted)';
+
+    const row = document.createElement('div');
+    row.className = 'pl-stepper-row';
+    row.innerHTML = `
+      <div class="pl-stepper-left">
+        <div class="pl-stepper-dot-wrap" style="background:${dotBg}20;border-color:${dotBg}40">
+          <span style="font-size:14px">${step.icon}</span>
+        </div>
+        <div class="pl-stepper-vline"></div>
+      </div>
+      <div class="pl-stepper-card${failedCls}" data-idx="${i}">
+        <div class="pl-sc-header">
+          <span class="pl-sc-name">${step.name}</span>
+          <span class="status-pill ${cls}" style="font-size:11px"><span class="dot"></span>${step.status}</span>
+        </div>
+        <div class="pl-sc-badges">
+          <span class="pl-badge in">↓ ${step.rowsIn.toLocaleString()}</span>
+          <span class="pl-badge out${step.rowsOut===0&&sc!=='succeeded'?' zero':''}">↑ ${step.rowsOut.toLocaleString()}</span>
+          <span class="pl-badge" style="background:var(--bg-input);color:var(--text-muted)">⏱ ${step.duration}</span>
+        </div>
+        ${step.error ? `<div style="margin-top:8px;font-size:11px;color:var(--accent-coral);font-weight:600">⚠ ${step.error.title}</div>` : ''}
+      </div>`;
+    row.querySelector('.pl-stepper-card').onclick = () => openBS(i);
+    wrap.appendChild(row);
   });
 }
+
+/* ══════════════════════════════════
+   SHARED EDITOR HTML
+══════════════════════════════════ */
+function buildEditorHTML(stepIdx, context) {
+  const p    = DATA.pipelines[activePipelineIdx];
+  const step = p.steps[stepIdx];
+  const sc   = step.status.toLowerCase();
+  const uid  = `${context}-${stepIdx}`;
+  const isEnabled = step.enabled !== false;
+
+  // Extra editable field depending on step type
+  let extraField = '';
+  if (step.name.toLowerCase().includes('filter')) {
+    extraField = `
+      <div class="field-group">
+        <label class="field-label">Filter condition</label>
+        <input id="${uid}-filter" class="field-input" type="text"
+          value="${step.filterValue || 'CTR < 0.1%'}" placeholder="e.g. CTR < 0.5%"/>
+      </div>`;
+  } else if (step.name.toLowerCase().includes('join')) {
+    extraField = `
+      <div class="field-group">
+        <label class="field-label">Join key</label>
+        <input id="${uid}-join" class="field-input" type="text"
+          value="${step.joinKey || (step.error ? 'region_iso3' : 'video_id')}" placeholder="e.g. region_code"/>
+      </div>`;
+  }
+
+  const errorHTML = step.error ? `
+    <div class="pl-err-box">
+      <strong>⚠ ${step.error.title}</strong>
+      <p>${step.error.detail}</p>
+    </div>` : '';
+
+  const logLines = sc === 'succeeded'
+    ? `<div class="log-ok">[OK]  ${step.rowsIn.toLocaleString()} → ${step.rowsOut.toLocaleString()} rows · ${step.duration}</div>
+       <div class="log-inf">[INFO] ${step.note}</div>`
+    : sc === 'failed'
+    ? `<div class="log-inf">[INFO] ${step.note}</div>
+       <div class="log-err">[ERR]  ${step.error ? step.error.detail : 'Unknown error'}</div>
+       <div class="log-err">[ABORT] 0 rows written</div>`
+    : `<div class="log-inf">[SKIP] ${step.note}</div>`;
+
+  return `
+    <div class="field-group">
+      <label class="field-label">Step name</label>
+      <input id="${uid}-name" class="field-input" type="text" value="${step.name}"/>
+    </div>
+    ${extraField}
+    <div class="field-toggle">
+      <span class="toggle-label">Step enabled</span>
+      <label class="tog">
+        <input type="checkbox" id="${uid}-tog" ${isEnabled ? 'checked' : ''}
+          onchange="toggleStepEnabled(${stepIdx}, this.checked, '${context}')"/>
+        <div class="tog-track"></div>
+        <div class="tog-thumb"></div>
+      </label>
+    </div>
+    ${errorHTML}
+    <div class="field-group">
+      <label class="field-label">Rows in / out</label>
+      <div style="display:flex;gap:8px">
+        <span class="pl-badge in" style="padding:5px 10px;border-radius:8px;font-size:12px">↓ ${step.rowsIn.toLocaleString()}</span>
+        <span class="pl-badge out${step.rowsOut===0&&sc!=='succeeded'?' zero':''}" style="padding:5px 10px;border-radius:8px;font-size:12px">↑ ${step.rowsOut.toLocaleString()}</span>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Log output</label>
+      <div class="pl-log">${logLines}</div>
+    </div>`;
+}
+
+/* ══════════════════════════════════
+   EDIT ACTIONS
+══════════════════════════════════ */
+function applyStepEdits(stepIdx, context) {
+  const step = DATA.pipelines[activePipelineIdx].steps[stepIdx];
+  const uid  = `${context}-${stepIdx}`;
+
+  const nameEl = document.getElementById(`${uid}-name`);
+  if (nameEl && nameEl.value.trim()) step.name = nameEl.value.trim();
+
+  const filterEl = document.getElementById(`${uid}-filter`);
+  if (filterEl) step.filterValue = filterEl.value;
+
+  const joinEl = document.getElementById(`${uid}-join`);
+  if (joinEl) step.joinKey = joinEl.value;
+
+  showToast('✅ Step updated');
+  // Rebuild canvas/stepper to reflect name change
+  if (window.innerWidth >= 768) buildDesktopCanvas();
+  else buildMobileStepper();
+}
+
+function toggleStepEnabled(stepIdx, val, context) {
+  DATA.pipelines[activePipelineIdx].steps[stepIdx].enabled = val;
+  showToast(val ? '✅ Step enabled' : '⏸ Step disabled');
+}
+
+/* ══════════════════════════════════
+   RE-RUN
+══════════════════════════════════ */
+function plRerun() {
+  const p = DATA.pipelines[activePipelineIdx];
+  if (p.status === 'Running') return;
+  const btn = document.getElementById('pl-rerun-btn');
+  btn.disabled = true;
+  p.status = 'Running';
+  p.steps.forEach(s => { if (s.status !== 'Succeeded') s.status = 'Running'; });
+  buildStatusBar();
+  if (window.innerWidth >= 768) buildDesktopCanvas(); else buildMobileStepper();
+
+  setTimeout(() => {
+    p.status = 'Succeeded';
+    p.steps.forEach(s => {
+      s.status = 'Succeeded';
+      if (s.rowsOut === 0 && s.rowsIn > 0) s.rowsOut = s.rowsIn;
+      s.error = null;
+    });
+    p.lastRun = '2026-11-04 ' + new Date().toTimeString().slice(0,5);
+    p.duration = '1m 02s';
+    btn.disabled = false;
+    buildStatusBar();
+    buildPipelineSelector();
+    if (window.innerWidth >= 768) buildDesktopCanvas(); else buildMobileStepper();
+    showToast('✅ Pipeline succeeded');
+  }, 2600);
+}
+
+function plRerunFromStep() {
+  const idx = selectedStepIdx !== null ? selectedStepIdx : bsStepIdx;
+  if (idx === null) return;
+  showToast(`⚡ Re-running from "${DATA.pipelines[activePipelineIdx].steps[idx].name}"…`);
+  setTimeout(() => plRerun(), 400);
+}
+
+/* ══════════════════════════════════
+   BOTTOM SHEET (mobile)
+══════════════════════════════════ */
+function openBS(stepIdx) {
+  bsStepIdx = stepIdx;
+  const step = DATA.pipelines[activePipelineIdx].steps[stepIdx];
+  document.getElementById('bs-title').textContent = step.icon + ' ' + step.name;
+  document.getElementById('bs-body').innerHTML = buildEditorHTML(stepIdx, 'bs');
+  // Add inline Save button to footer
+  document.getElementById('bs-foot').innerHTML = `
+    <button class="btn-primary bs-rerun" onclick="applyStepEdits(${stepIdx},'bs');closeBS()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      Save changes
+    </button>
+    <button class="btn-primary bs-rerun" style="background:var(--accent-blue)" onclick="plRerunFromStep()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
+      Re-run from this step
+    </button>
+    <button class="btn-ghost" style="justify-content:center" onclick="closeBS()">Dismiss</button>`;
+  document.getElementById('bs-overlay').classList.add('open');
+}
+
+function closeBS() {
+  document.getElementById('bs-overlay').classList.remove('open');
+  bsStepIdx = null;
+}
+
+/* Swipe-down to close */
+(function setupBSSwipe() {
+  let startY = 0;
+  document.addEventListener('DOMContentLoaded', () => {
+    const drag = document.getElementById('bs-drag');
+    const sheet = document.getElementById('bs-sheet');
+    if (!drag || !sheet) return;
+    drag.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+    drag.addEventListener('touchmove', e => {
+      const dy = e.touches[0].clientY - startY;
+      if (dy > 0) sheet.style.transform = `translateY(${dy}px)`;
+    }, { passive: true });
+    drag.addEventListener('touchend', e => {
+      const dy = e.changedTouches[0].clientY - startY;
+      if (dy > 80) { closeBS(); }
+      sheet.style.transform = '';
+    });
+  });
+})();
 </script>
 </body>
 </html>
