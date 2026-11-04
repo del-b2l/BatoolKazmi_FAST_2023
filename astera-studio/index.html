@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
     rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+  <script src="chart.umd.min.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -224,15 +224,15 @@
           <div class="charts-grid" id="charts-grid">
             <div class="card">
               <div class="card-title">Cover CTR (%) · Weekly</div>
-              <div class="chart-canvas-wrap"><canvas id="chart-ctr"></canvas></div>
+              <div class="chart-canvas-wrap"><canvas id="chart-ctr" height="200"></canvas></div>
             </div>
             <div class="card">
               <div class="card-title">Fiverr Orders by Region</div>
-              <div class="chart-canvas-wrap"><canvas id="chart-region-bar"></canvas></div>
+              <div class="chart-canvas-wrap"><canvas id="chart-region-bar" height="200"></canvas></div>
             </div>
             <div class="card">
               <div class="card-title">Revenue Split</div>
-              <div class="chart-canvas-wrap"><canvas id="chart-donut"></canvas></div>
+              <div class="chart-canvas-wrap"><canvas id="chart-donut" height="200"></canvas></div>
             </div>
           </div>
 
@@ -499,7 +499,6 @@
     ═══════════════════════════════════════════════════ */
     let activeView = 'chat';
     let activePipelineIdx = 1;
-    let dashRendered = false;
     let pipelineStatus = 'Failed';      // tracks re-run state
     let pinnedCharts = [];               // chat → dashboard pins
     let chartInstances = {};             // track Chart.js instances for cleanup
@@ -629,7 +628,7 @@
     <div class="msg-avatar avatar-ai">AS</div>
     <div class="answer-card" data-key="${ansKey}" data-type="${ans.type}" data-id="${canvasId}">
       <div class="chart-box" style="position:relative;height:180px;margin-bottom:10px">
-        <canvas id="${canvasId}" style="display:block;width:100%;height:180px"></canvas>
+        <canvas id="${canvasId}" height="180" style="display:block;width:100%"></canvas>
       </div>
       <div class="summary" style="font-size:13px;color:var(--text-body);line-height:1.5;margin-bottom:12px">${ans.summary}</div>
       <div class="answer-actions" style="display:flex;gap:6px;flex-wrap:wrap">
@@ -640,7 +639,7 @@
     </div>`;
 
       // Render chart AFTER a tick so the canvas is in the DOM with real dimensions
-      setTimeout(() => renderAnswerChart(canvasId, ans.type, ans), 60);
+      setTimeout(() => renderAnswerChart(canvasId, ans.type, ans), 150);
       return row;
     }
 
@@ -654,6 +653,10 @@
         chartInstances[canvasId].destroy();
         delete chartInstances[canvasId];
       }
+
+      // Ensure the canvas has an explicit pixel height so Chart.js can read it
+      // even if the parent is freshly inserted into the DOM.
+      if (!el.height || el.height === 0) el.height = 180;
 
       const isMultiColor = Array.isArray(ans.color);
 
@@ -712,7 +715,7 @@
       const type = card.dataset.type;
       pinnedCharts.push({ ansKey, type });
       showToast('📌 Pinned to Dashboard');
-      if (dashRendered) addPinnedChart(ansKey, type);
+      // if (dashRendered) addPinnedChart(ansKey, type);
     }
 
     function addPinnedChart(ansKey, type) {
@@ -724,9 +727,9 @@
       const div = document.createElement('div');
       div.className = 'card';
       div.innerHTML = `<div class="card-title" style="margin-bottom:8px">${ans.summary.replace(/<[^>]+>/g, '').substring(0, 42)}…</div>
-    <div class="chart-canvas-wrap" style="position:relative;height:180px"><canvas id="${id}" style="width:100%;height:180px"></canvas></div>`;
+    <div class="chart-canvas-wrap" style="position:relative;height:180px"><canvas id="${id}" height="180" style="width:100%;display:block"></canvas></div>`;
       grid.appendChild(div);
-      setTimeout(() => renderAnswerChart(id, type, ans), 60);
+      setTimeout(() => renderAnswerChart(id, type, ans), 150);
     }
 
     /* Auto-resize textarea + Enter-to-send */
@@ -744,11 +747,10 @@
       renderDashStatusPill();
       renderFailBanner();
       renderKPIs();
-      if (!dashRendered) {
-        dashRendered = true;
-        // Delay chart init by one frame so the view is visible and canvases have real pixel sizes
-        setTimeout(() => renderDashCharts(), 60);
-      }
+      // Always (re)render charts — destroy old instances first so they never stack up.
+      // Use a 150 ms delay so the view's display:block has fully painted and
+      // the canvas elements have real pixel dimensions when Chart.js reads them.
+      setTimeout(() => renderDashCharts(), 150);
       // Render any pinned charts queued from chat
       const toPin = [...pinnedCharts];
       pinnedCharts = [];
@@ -782,6 +784,12 @@
     }
 
     function renderDashCharts() {
+      // Destroy any existing instances so Chart.js doesn't complain about
+      // "canvas already in use" when the user revisits the dashboard view.
+      ['chart-ctr', 'chart-region-bar', 'chart-donut'].forEach(id => {
+        if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+      });
+
       // 1 — CTR line
       const d = DATA.ctrWeekly;
       chartInstances['chart-ctr'] = new Chart(document.getElementById('chart-ctr'), {

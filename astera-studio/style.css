@@ -334,6 +334,21 @@ a {
 }
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• VIEW â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.view-container,
+.chat-messages,
+.pl-panel-body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-light) transparent;
+}
+
+.view-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.view-container::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+}
+
 .view-container {
   flex: 1;
   overflow-y: auto;
@@ -932,8 +947,10 @@ a {
 }
 
 .chart-canvas-wrap canvas {
+  /* Let Chart.js own the canvas dimensions — do NOT override with 100% height
+     because percentage heights fail when the parent was recently display:none. */
   width: 100% !important;
-  height: 100% !important
+  display: block
 }
 
 /* Pinned charts row */
