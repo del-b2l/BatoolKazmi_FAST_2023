@@ -1,4 +1,4 @@
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TOKENS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ TOKENS ═══════════════════ */
 :root {
   --bg-page: #C9D6EC;
   --bg-app: #EEF2FB;
@@ -45,7 +45,7 @@
   --font: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• RESET â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ RESET ═══════════════════ */
 *,
 *::before,
 *::after {
@@ -101,7 +101,7 @@ a {
   color: inherit
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• APP SHELL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ APP SHELL ═══════════════════ */
 .app-shell {
   width: 100%;
   max-width: 1440px;
@@ -115,7 +115,7 @@ a {
   position: relative
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• SIDEBAR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ SIDEBAR ═══════════════════ */
 /* .sidebar{width:var(--sidebar-w);background:var(--bg-sidebar);display:flex;flex-direction:column;
   align-items:center;padding:20px 0 28px;gap:6px;border-right:1px solid rgba(79,116,184,.08);flex-shrink:0;z-index:10} */
 
@@ -229,7 +229,7 @@ a {
   cursor: pointer
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MAIN AREA â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ MAIN AREA ═══════════════════ */
 .main-area {
   flex: 1;
   display: flex;
@@ -238,7 +238,7 @@ a {
   min-width: 0
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TOPBAR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ TOPBAR ═══════════════════ */
 .topbar {
   height: var(--topbar-h);
   background: var(--bg-topbar);
@@ -333,7 +333,7 @@ a {
   border: 2px solid var(--bg-app)
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• VIEW â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ VIEW ═══════════════════ */
 .view-container,
 .chat-messages,
 .pl-panel-body {
@@ -387,7 +387,7 @@ a {
   }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CARD â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ CARD ═══════════════════ */
 .card {
   background: var(--bg-card);
   border-radius: var(--radius-card);
@@ -404,7 +404,7 @@ a {
   margin-bottom: 16px
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• BUTTONS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ BUTTONS ═══════════════════ */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -449,7 +449,7 @@ a {
   color: var(--primary)
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• STATUS PILLS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ STATUS PILLS ═══════════════════ */
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -517,7 +517,7 @@ a {
   }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• ICON TILES â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ ICON TILES ═══════════════════ */
 .icon-tile {
   width: 44px;
   height: 44px;
@@ -548,9 +548,9 @@ a {
   color: var(--accent-green)
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ══════════════════════════════════════════════════
    CHAT VIEW
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+══════════════════════════════════════════════════ */
 .chat-layout {
   display: flex;
   flex-direction: column;
@@ -827,9 +827,9 @@ a {
   animation-delay: .4s
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ══════════════════════════════════════════════════
    DASHBOARD VIEW
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+══════════════════════════════════════════════════ */
 .dash-header {
   display: flex;
   align-items: center;
@@ -1044,9 +1044,9 @@ a {
   justify-content: flex-end
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   PIPELINE DETAIL VIEW â€” full rewrite
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ══════════════════════════════════════════════════
+   PIPELINE DETAIL VIEW — full rewrite
+══════════════════════════════════════════════════ */
 
 /* Selector / status header */
 .pl-selector {
@@ -1637,13 +1637,28 @@ a {
   }
 }
 
-@media(min-width:768px) {
+/* On tablets (768–1199px), also use the stepper — the SVG canvas + side panel
+   combo is too cramped on narrow tablets. The side panel "click to inspect" takes
+   up half the width with nothing shown by default. */
+@media(min-width:768px) and (max-width:1199px) {
+  .pl-canvas-layout {
+    display: none
+  }
+
+  .pl-stepper {
+    display: flex
+  }
+}
+
+@media(min-width:1200px) {
+
+  /* Only block bottom sheet on full desktop where the side panel is visible */
   .bs-overlay {
     display: none !important
   }
 }
 
-/* Demo bar â€” always-visible quick-ask row */
+/* Demo bar — always-visible quick-ask row */
 .demo-bar {
   display: flex;
   gap: 8px;
@@ -1688,7 +1703,7 @@ a {
   transform: translateX(-50%) translateY(0)
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• BOTTOM NAV â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ BOTTOM NAV ═══════════════════ */
 .bottom-nav {
   display: none;
   position: absolute;
@@ -1740,7 +1755,7 @@ a {
   opacity: 1
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• RESPONSIVE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════ RESPONSIVE ═══════════════════ */
 @media(max-width:1199px) {
   .topbar-search {
     max-width: 240px
@@ -1856,4 +1871,58 @@ a {
   .nav-tooltip {
     display: none
   }
+}
+
+/* ═══════════════════════════════════════════════════
+   NOTIFICATION MODAL
+═══════════════════════════════════════════════════ */
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--bg-input)
+}
+
+.notif-item:last-child {
+  border-bottom: none
+}
+
+.notif-dot-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
+  margin-top: 5px
+}
+
+.notif-unread .notif-title {
+  font-weight: 600
+}
+
+.notif-content {
+  flex: 1
+}
+
+.notif-title {
+  font-size: 13px;
+  color: var(--text-heading);
+  line-height: 1.4;
+  margin-bottom: 2px
+}
+
+.notif-sub {
+  font-size: 11px;
+  color: var(--text-muted)
+}
+
+.notif-dot.read::after {
+  display: none;
 }
