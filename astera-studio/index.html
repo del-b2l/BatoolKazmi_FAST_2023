@@ -1,1277 +1,1025 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-<title>Astera Studio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
-<style>
-/* ═══════════════════ TOKENS ═══════════════════ */
-:root{
-  --bg-page:#C9D6EC;--bg-app:#EEF2FB;--bg-card:#FFFFFF;--bg-sidebar:#E4EAF8;
-  --bg-topbar:rgba(238,242,251,.92);--bg-input:#F3F6FC;--bg-hover:#EEF2FB;
-  --text-heading:#3A4670;--text-body:#6B7A99;--text-muted:#9BA8C3;--text-inv:#fff;
-  --primary:#4F74B8;--primary-light:#D1DCF5;--primary-glow:rgba(79,116,184,.30);
-  --accent-coral:#E8455F;--accent-yellow:#F7C948;--accent-blue:#5B7FC7;--accent-green:#4CAF6E;
-  --accent-coral-bg:#FDEAED;--accent-yellow-bg:#FEF8E5;--accent-blue-bg:#E8EEFB;--accent-green-bg:#E7F6ED;
-  --status-running:#5B7FC7;--status-running-bg:#E8EEFB;
-  --status-success:#4CAF6E;--status-success-bg:#E7F6ED;
-  --status-failed:#E8455F;--status-failed-bg:#FDEAED;
-  --status-scheduled:#F7C948;--status-scheduled-bg:#FEF8E5;
-  --radius-app:32px;--radius-card:24px;--radius-pill:999px;--radius-icon:16px;--radius-sm:12px;
-  --shadow-card:0 2px 24px rgba(74,99,166,.08),0 1px 4px rgba(74,99,166,.04);
-  --shadow-btn:0 4px 16px var(--primary-glow);--shadow-app:0 8px 48px rgba(58,70,112,.14);
-  --sidebar-w:72px;--topbar-h:68px;--gap:20px;--bottom-nav-h:64px;
-  --font:'Plus Jakarta Sans',sans-serif;
-}
-
-/* ═══════════════════ RESET ═══════════════════ */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{font-family:var(--font);font-weight:400;background:var(--bg-page);color:var(--text-body);
-  display:flex;align-items:center;justify-content:center;padding:24px;min-height:100dvh;
-  -webkit-tap-highlight-color:transparent}
-button{cursor:pointer;border:none;background:none;font-family:var(--font)}
-input,textarea{font-family:var(--font);border:none;outline:none;background:none}
-svg{flex-shrink:0}ul,ol{list-style:none}a{text-decoration:none;color:inherit}
-
-/* ═══════════════════ APP SHELL ═══════════════════ */
-.app-shell{width:100%;max-width:1440px;height:92dvh;min-height:560px;background:var(--bg-app);
-  border-radius:var(--radius-app);box-shadow:var(--shadow-app);display:flex;overflow:hidden;position:relative}
-
-/* ═══════════════════ SIDEBAR ═══════════════════ */
-.sidebar{width:var(--sidebar-w);background:var(--bg-sidebar);display:flex;flex-direction:column;
-  align-items:center;padding:20px 0 28px;gap:6px;border-right:1px solid rgba(79,116,184,.08);flex-shrink:0;z-index:10}
-.sidebar-logo{width:42px;height:42px;background:var(--primary);border-radius:14px;
-  display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:var(--shadow-btn)}
-.sidebar-spacer{flex:1}
-.nav-item{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-  color:var(--text-muted);transition:background .18s,color .18s;cursor:pointer;position:relative}
-.nav-item:hover,.nav-item.active{background:var(--primary-light);color:var(--primary)}
-.nav-item.active::before{content:'';position:absolute;left:-1px;width:3px;height:24px;
-  background:var(--primary);border-radius:0 3px 3px 0}
-.nav-tooltip{position:absolute;left:calc(100% + 12px);background:var(--text-heading);color:#fff;
-  font-size:12px;font-weight:500;padding:5px 10px;border-radius:8px;white-space:nowrap;
-  opacity:0;pointer-events:none;transform:translateX(-6px);transition:opacity .15s,transform .15s;z-index:100}
-.nav-item:hover .nav-tooltip{opacity:1;transform:translateX(0)}
-.sidebar-avatar{width:36px;height:36px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent-blue),var(--primary));
-  display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;margin-top:12px;cursor:pointer}
-
-/* ═══════════════════ MAIN AREA ═══════════════════ */
-.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-
-/* ═══════════════════ TOPBAR ═══════════════════ */
-.topbar{height:var(--topbar-h);background:var(--bg-topbar);backdrop-filter:blur(12px);
-  display:flex;align-items:center;padding:0 24px;gap:12px;
-  border-bottom:1px solid rgba(79,116,184,.08);flex-shrink:0}
-.topbar-title{font-size:17px;font-weight:600;color:var(--text-heading);margin-right:4px;white-space:nowrap}
-.topbar-search{flex:1;max-width:380px;background:var(--bg-input);border-radius:var(--radius-pill);
-  display:flex;align-items:center;padding:0 14px;gap:8px;height:40px;margin:0 auto 0 16px}
-.topbar-search input{flex:1;font-size:14px;color:var(--text-heading)}
-.topbar-search input::placeholder{color:var(--text-muted)}
-.topbar-date{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-body);
-  background:var(--bg-input);border-radius:var(--radius-pill);padding:7px 14px;cursor:pointer;white-space:nowrap}
-.topbar-date svg{color:var(--primary)}
-.topbar-btn{width:40px;height:40px;border-radius:50%;background:var(--bg-input);
-  display:flex;align-items:center;justify-content:center;color:var(--text-body);transition:background .15s;flex-shrink:0}
-.topbar-btn:hover{background:var(--primary-light);color:var(--primary)}
-.notif-dot{position:relative}
-.notif-dot::after{content:'';position:absolute;top:8px;right:8px;width:7px;height:7px;
-  background:var(--accent-coral);border-radius:50%;border:2px solid var(--bg-app)}
-
-/* ═══════════════════ VIEW ═══════════════════ */
-.view-container{flex:1;overflow-y:auto;overflow-x:hidden;padding:24px;scroll-behavior:smooth}
-.view-container::-webkit-scrollbar{width:6px}
-.view-container::-webkit-scrollbar-thumb{background:var(--primary-light);border-radius:3px}
-.view{display:none}.view.active{display:block;animation:fadeUp .28s ease both}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-
-/* ═══════════════════ CARD ═══════════════════ */
-.card{background:var(--bg-card);border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:22px 24px}
-.card-title{font-size:13px;font-weight:600;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px}
-
-/* ═══════════════════ BUTTONS ═══════════════════ */
-.btn-primary{display:inline-flex;align-items:center;gap:7px;background:var(--primary);color:#fff;
-  font-size:14px;font-weight:600;padding:10px 20px;border-radius:var(--radius-pill);
-  box-shadow:var(--shadow-btn);transition:opacity .15s,transform .12s;min-height:44px;white-space:nowrap}
-.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
-.btn-primary:active{transform:translateY(0)}
-.btn-ghost{display:inline-flex;align-items:center;gap:6px;color:var(--text-body);font-size:13px;
-  font-weight:500;padding:9px 16px;border-radius:var(--radius-pill);background:var(--bg-input);
-  transition:background .15s,color .15s;min-height:44px}
-.btn-ghost:hover{background:var(--primary-light);color:var(--primary)}
-
-/* ═══════════════════ STATUS PILLS ═══════════════════ */
-.status-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;
-  padding:4px 10px;border-radius:var(--radius-pill);white-space:nowrap}
-.status-pill .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.pill-running{color:var(--status-running);background:var(--status-running-bg)}
-.pill-running .dot{background:var(--status-running);animation:pulse 1.4s infinite}
-.pill-succeeded{color:var(--status-success);background:var(--status-success-bg)}
-.pill-succeeded .dot{background:var(--status-success)}
-.pill-failed{color:var(--status-failed);background:var(--status-failed-bg)}
-.pill-failed .dot{background:var(--status-failed)}
-.pill-scheduled{color:#B08A00;background:var(--status-scheduled-bg)}
-.pill-scheduled .dot{background:var(--status-scheduled)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* ═══════════════════ ICON TILES ═══════════════════ */
-.icon-tile{width:44px;height:44px;border-radius:var(--radius-icon);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.tile-coral{background:var(--accent-coral-bg);color:var(--accent-coral)}
-.tile-yellow{background:var(--accent-yellow-bg);color:#B08A00}
-.tile-blue{background:var(--accent-blue-bg);color:var(--accent-blue)}
-.tile-green{background:var(--accent-green-bg);color:var(--accent-green)}
-
-/* ══════════════════════════════════════════════════
-   CHAT VIEW
-══════════════════════════════════════════════════ */
-.chat-layout{display:flex;flex-direction:column;height:calc(92dvh - var(--topbar-h) - 48px);gap:0}
-.chat-messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:12px}
-.chat-messages::-webkit-scrollbar{width:4px}
-.chat-messages::-webkit-scrollbar-thumb{background:var(--primary-light);border-radius:2px}
-
-/* Greeting card */
-.chat-greeting{text-align:center;padding:40px 16px 24px}
-.chat-greeting h2{font-size:22px;font-weight:700;color:var(--text-heading);margin-top:14px;margin-bottom:6px}
-.chat-greeting p{font-size:14px;color:var(--text-body);max-width:380px;margin:0 auto;line-height:1.6}
-.suggestion-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px}
-.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--primary);
-  background:var(--primary-light);border-radius:var(--radius-pill);padding:8px 14px;cursor:pointer;
-  transition:background .15s,transform .12s;min-height:36px}
-.chip:hover{background:#c3d1ef;transform:translateY(-1px)}
-
-/* Messages */
-.msg-row{display:flex;gap:10px;align-items:flex-end}
-.msg-row.user{flex-direction:row-reverse}
-.msg-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:600;flex-shrink:0}
-.avatar-ai{background:linear-gradient(135deg,#4F74B8,#5B7FC7);color:#fff}
-.avatar-user{background:linear-gradient(135deg,#E8455F,#F7C948);color:#fff}
-.msg-bubble{max-width:72%;padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.6;
-  color:var(--text-heading);background:var(--bg-card);box-shadow:var(--shadow-card)}
-.msg-row.user .msg-bubble{background:var(--primary);color:#fff;border-bottom-right-radius:4px}
-.msg-bubble.ai{border-bottom-left-radius:4px}
-
-/* Answer card (chart + actions) */
-.answer-card{background:var(--bg-card);border-radius:18px;box-shadow:var(--shadow-card);
-  padding:16px 18px;max-width:420px;min-width:280px}
-.answer-card .chart-box{position:relative;height:180px;margin-bottom:10px}
-.answer-card .chart-box canvas{width:100%!important;height:100%!important}
-.answer-card .summary{font-size:13px;color:var(--text-body);line-height:1.5;margin-bottom:12px}
-.answer-card .summary strong{color:var(--text-heading)}
-.answer-actions{display:flex;gap:6px;flex-wrap:wrap}
-.answer-actions .btn-ghost{font-size:12px;padding:6px 12px;min-height:34px}
-
-/* Chat input */
-.chat-input-wrap{padding-top:14px;flex-shrink:0}
-.chat-input-row{display:flex;align-items:flex-end;gap:10px;background:var(--bg-card);
-  border-radius:20px;padding:10px 10px 10px 18px;box-shadow:var(--shadow-card)}
-.chat-input-row textarea{flex:1;font-size:14px;color:var(--text-heading);resize:none;
-  max-height:120px;min-height:24px;line-height:1.5;background:none;border:none;outline:none;font-family:var(--font)}
-.chat-input-row textarea::placeholder{color:var(--text-muted)}
-.icon-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  color:var(--text-muted);transition:background .15s,color .15s}
-.icon-btn:hover{background:var(--primary-light);color:var(--primary)}
-.send-btn{width:40px;height:40px;border-radius:50%;background:var(--primary);display:flex;
-  align-items:center;justify-content:center;color:#fff;box-shadow:var(--shadow-btn);
-  transition:opacity .15s,transform .12s;flex-shrink:0}
-.send-btn:hover{opacity:.88;transform:scale(1.06)}
-
-/* Typing dots */
-@keyframes typing{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
-.typing-dot{display:inline-block;width:7px;height:7px;background:var(--text-muted);border-radius:50%;margin:0 2px;animation:typing 1.2s infinite}
-.typing-dot:nth-child(2){animation-delay:.2s}
-.typing-dot:nth-child(3){animation-delay:.4s}
-
-/* ══════════════════════════════════════════════════
-   DASHBOARD VIEW
-══════════════════════════════════════════════════ */
-.dash-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-.dash-header h1{font-size:24px;font-weight:700;color:var(--text-heading)}
-.dash-meta{font-size:13px;color:var(--text-body);margin-left:4px}
-.dash-actions{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-
-/* Failure banner */
-.fail-banner{display:flex;align-items:center;gap:12px;border-left:4px solid var(--accent-coral);margin-bottom:var(--gap)}
-.fail-banner .fail-text{flex:1;font-size:13px}
-.fail-banner .fail-text strong{color:var(--text-heading);display:block;margin-bottom:2px}
-
-/* KPI row */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap);margin-bottom:var(--gap)}
-.kpi-card{display:flex;align-items:flex-start;gap:14px}
-.kpi-label{font-size:12px;font-weight:600;color:var(--text-muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
-.kpi-value{font-size:28px;font-weight:500;color:var(--text-heading);line-height:1.1;margin-bottom:4px}
-.kpi-delta{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:600;padding:3px 8px;border-radius:var(--radius-pill)}
-.kpi-delta.up{color:var(--accent-green);background:var(--accent-green-bg)}
-.kpi-delta.down{color:var(--accent-coral);background:var(--accent-coral-bg)}
-
-/* Charts grid */
-.charts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-bottom:var(--gap)}
-.charts-grid .card{min-height:260px}
-.chart-canvas-wrap{position:relative;height:200px}
-.chart-canvas-wrap canvas{width:100%!important;height:100%!important}
-
-/* Pinned charts row */
-.pinned-section{margin-bottom:var(--gap)}
-.pinned-section .card-title{margin-bottom:8px}
-.pinned-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
-.pinned-grid .card{min-height:200px}
-
-/* Filter overlay (popover on desktop, bottom sheet on mobile) */
-.filter-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(58,70,112,.25);align-items:flex-start;justify-content:center;padding-top:140px}
-.filter-overlay.open{display:flex}
-.filter-panel{background:var(--bg-card);border-radius:var(--radius-card);box-shadow:0 12px 48px rgba(58,70,112,.18);
-  padding:24px;width:360px;max-width:90vw;animation:fadeUp .22s ease both}
-.filter-panel h3{font-size:16px;font-weight:700;color:var(--text-heading);margin-bottom:16px}
-.filter-group{margin-bottom:16px}
-.filter-group label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;
-  letter-spacing:.05em;margin-bottom:6px}
-.filter-group select,.filter-group input[type=date]{width:100%;padding:10px 14px;border-radius:var(--radius-sm);
-  background:var(--bg-input);border:1px solid transparent;font-size:14px;color:var(--text-heading);
-  font-family:var(--font);cursor:pointer;min-height:44px}
-.filter-group select:focus,.filter-group input[type=date]:focus{border-color:var(--primary)}
-.filter-actions{display:flex;gap:8px;justify-content:flex-end}
-
-/* ══════════════════════════════════════════════════
-   PIPELINE DETAIL VIEW — full rewrite
-══════════════════════════════════════════════════ */
-
-/* Selector / status header */
-.pl-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.pl-tab{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--radius-pill);
-  font-size:13px;font-weight:500;color:var(--text-body);background:var(--bg-input);cursor:pointer;
-  transition:background .15s,color .15s;min-height:44px;border:2px solid transparent}
-.pl-tab.active{background:var(--primary);color:#fff;box-shadow:var(--shadow-btn)}
-.pl-status-bar{display:flex;align-items:center;gap:14px;padding:14px 20px;border-radius:var(--radius-card);
-  background:var(--bg-card);box-shadow:var(--shadow-card);margin-bottom:16px;flex-wrap:wrap}
-.pl-status-bar h2{font-size:15px;font-weight:700;color:var(--text-heading);flex:1;min-width:0;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pl-meta{font-size:12px;color:var(--text-muted);white-space:nowrap}
-
-/* Desktop: canvas + side panel */
-.pl-canvas-layout{display:flex;gap:16px;height:calc(92dvh - var(--topbar-h) - 185px);min-height:380px}
-.pl-canvas-wrap{flex:1;position:relative;background:var(--bg-card);border-radius:var(--radius-card);
-  box-shadow:var(--shadow-card);overflow:hidden;min-width:0}
-.pl-svg-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
-.pl-nodes{position:absolute;inset:0;overflow:auto}
-
-/* Step nodes */
-.pl-node{position:absolute;width:184px;cursor:pointer;user-select:none}
-.pl-node-card{background:#fff;border-radius:16px;box-shadow:var(--shadow-card);
-  padding:12px 14px;border:2px solid transparent;transition:border-color .2s,box-shadow .2s;position:relative}
-.pl-node-card:hover,.pl-node-card.selected{border-color:var(--primary);box-shadow:0 4px 24px var(--primary-glow)}
-.pl-node-card.failed-node{border-left:4px solid var(--accent-coral);background:var(--accent-coral-bg)}
-.pl-node-card.selected.failed-node{box-shadow:0 4px 24px rgba(232,69,95,.25)}
-.pl-node-icon{font-size:19px;margin-bottom:5px}
-.pl-node-name{font-size:12px;font-weight:600;color:var(--text-heading);margin-bottom:8px;line-height:1.3}
-.pl-node-badges{display:flex;gap:5px;flex-wrap:wrap}
-.pl-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 7px;
-  border-radius:var(--radius-pill)}
-.pl-badge.in {background:var(--accent-blue-bg);  color:var(--accent-blue)}
-.pl-badge.out{background:var(--accent-green-bg); color:var(--accent-green)}
-.pl-badge.out.zero{background:var(--accent-coral-bg);color:var(--accent-coral)}
-
-/* Status dot on node */
-.pl-node-dot{position:absolute;top:-6px;right:-6px;width:14px;height:14px;border-radius:50%;
-  border:2px solid var(--bg-card)}
-.dot-succeeded{background:var(--accent-green)}
-.dot-failed   {background:var(--accent-coral)}
-.dot-running  {background:var(--accent-blue);animation:pulse 1.4s infinite}
-.dot-skipped  {background:var(--text-muted)}
-
-/* Right side panel */
-.pl-side-panel{width:296px;flex-shrink:0;background:var(--bg-card);border-radius:var(--radius-card);
-  box-shadow:var(--shadow-card);display:flex;flex-direction:column;overflow:hidden}
-.pl-panel-empty{display:flex;align-items:center;justify-content:center;color:var(--text-muted);
-  font-size:13px;text-align:center;padding:32px 20px;height:100%}
-.pl-panel-header{padding:16px 20px 12px;border-bottom:1px solid var(--bg-input);flex-shrink:0}
-.pl-panel-header h3{font-size:14px;font-weight:700;color:var(--text-heading);margin-bottom:2px}
-.pl-panel-header .sub{font-size:11px;color:var(--text-muted)}
-.pl-panel-body{flex:1;overflow-y:auto;padding:14px 18px}
-.pl-panel-body::-webkit-scrollbar{width:4px}
-.pl-panel-body::-webkit-scrollbar-thumb{background:var(--primary-light);border-radius:2px}
-.pl-panel-footer{padding:10px 18px;border-top:1px solid var(--bg-input);display:flex;gap:8px;flex-shrink:0}
-
-/* Shared form fields */
-.field-group{margin-bottom:14px}
-.field-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;
-  letter-spacing:.05em;margin-bottom:5px;display:block}
-.field-input{width:100%;background:var(--bg-input);border-radius:var(--radius-sm);padding:9px 12px;
-  font-size:13px;color:var(--text-heading);font-family:var(--font);border:1.5px solid transparent;
-  transition:border-color .15s;min-height:40px;display:block}
-.field-input:focus{border-color:var(--primary);outline:none}
-.field-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 0;margin-bottom:4px}
-.toggle-label{font-size:13px;color:var(--text-heading);font-weight:500}
-/* Custom toggle */
-.tog{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}
-.tog input{opacity:0;width:0;height:0;position:absolute}
-.tog-track{position:absolute;inset:0;border-radius:11px;background:var(--text-muted);cursor:pointer;transition:background .2s}
-.tog input:checked+.tog-track{background:var(--primary)}
-.tog-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;
-  background:#fff;transition:transform .2s;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.18)}
-.tog input:checked~.tog-thumb{transform:translateX(18px)}
-/* Error box */
-.pl-err-box{background:var(--accent-coral-bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px}
-.pl-err-box strong{display:block;font-size:12px;color:var(--accent-coral);font-weight:700;margin-bottom:4px}
-.pl-err-box p{font-size:12px;color:var(--accent-coral);line-height:1.5}
-/* Log box */
-.pl-log{background:#1E2340;border-radius:12px;padding:12px 14px;font-family:'Courier New',monospace;
-  font-size:11px;color:#9CA8D0;line-height:1.7;overflow-x:auto;margin-bottom:14px}
-.log-ok{color:#4CAF6E}.log-err{color:#E8455F}.log-inf{color:#5B7FC7}
-
-/* Mobile stepper (only on <768) */
-.pl-stepper{display:none;flex-direction:column}
-.pl-stepper-row{display:flex;gap:14px}
-.pl-stepper-left{display:flex;flex-direction:column;align-items:center;width:30px;flex-shrink:0}
-.pl-stepper-dot-wrap{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;font-size:14px;border:2px solid var(--bg-app);flex-shrink:0;position:relative}
-.pl-stepper-vline{width:2px;flex:1;min-height:12px;background:var(--primary-light)}
-.pl-stepper-row:last-child .pl-stepper-vline{display:none}
-.pl-stepper-card{flex:1;background:var(--bg-card);border-radius:16px;box-shadow:var(--shadow-card);
-  padding:13px 15px;margin-bottom:14px;cursor:pointer;border:2px solid transparent;transition:border-color .18s}
-.pl-stepper-card:active{border-color:var(--primary)}
-.pl-stepper-card.failed-m{border-color:var(--accent-coral)}
-.pl-sc-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.pl-sc-name{font-size:14px;font-weight:600;color:var(--text-heading);flex:1}
-.pl-sc-badges{display:flex;gap:5px;flex-wrap:wrap}
-
-/* Bottom sheet */
-.bs-overlay{display:none;position:fixed;inset:0;background:rgba(58,70,112,.35);z-index:600;align-items:flex-end}
-.bs-overlay.open{display:flex}
-.bs-sheet{background:var(--bg-card);border-radius:var(--radius-card) var(--radius-card) 0 0;
-  width:100%;max-height:88dvh;display:flex;flex-direction:column;
-  box-shadow:0 -8px 40px rgba(58,70,112,.18);
-  transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1);
-  padding-bottom:env(safe-area-inset-bottom,0px)}
-.bs-overlay.open .bs-sheet{transform:translateY(0)}
-.bs-drag{width:36px;height:4px;background:var(--text-muted);border-radius:2px;
-  margin:12px auto 2px;opacity:.4;cursor:grab;flex-shrink:0}
-.bs-head{padding:8px 18px 12px;border-bottom:1px solid var(--bg-input);flex-shrink:0;display:flex;align-items:center;gap:10px}
-.bs-head h3{font-size:16px;font-weight:700;color:var(--text-heading);flex:1}
-.bs-close{width:32px;height:32px;border-radius:50%;background:var(--bg-input);
-  display:flex;align-items:center;justify-content:center;color:var(--text-muted)}
-.bs-close:hover{background:var(--primary-light);color:var(--primary)}
-.bs-body{flex:1;overflow-y:auto;padding:14px 18px}
-.bs-foot{padding:12px 18px;border-top:1px solid var(--bg-input);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
-.bs-rerun{justify-content:center}
-
-/* Responsive */
-@media(max-width:767px){
-  .pl-canvas-layout{display:none}
-  .pl-stepper{display:flex}
-}
-@media(min-width:768px){
-  .bs-overlay{display:none!important}
-}
-
-/* ═══════════════════ TOAST ═══════════════════ */
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
-  background:var(--text-heading);color:#fff;padding:10px 22px;border-radius:var(--radius-pill);
-  font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.18);z-index:999;
-  opacity:0;transition:opacity .25s,transform .25s;pointer-events:none}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* ═══════════════════ BOTTOM NAV ═══════════════════ */
-.bottom-nav{display:none;position:absolute;bottom:0;left:0;right:0;
-  height:calc(var(--bottom-nav-h) + env(safe-area-inset-bottom,0px));
-  padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg-card);
-  border-top:1px solid rgba(79,116,184,.08);box-shadow:0 -4px 24px rgba(58,70,112,.08);
-  flex-direction:row;align-items:center;justify-content:space-around;
-  border-radius:0 0 var(--radius-app) var(--radius-app);z-index:20}
-.bnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:64px;min-height:44px;
-  justify-content:center;color:var(--text-muted);font-size:11px;font-weight:500;
-  transition:color .15s;cursor:pointer;padding:6px 12px;border-radius:12px}
-.bnav-item.active{color:var(--primary)}
-.bnav-dot{width:4px;height:4px;background:var(--primary);border-radius:50%;opacity:0}
-.bnav-item.active .bnav-dot{opacity:1}
-
-/* ═══════════════════ RESPONSIVE ═══════════════════ */
-@media(max-width:1199px){
-  .topbar-search{max-width:240px}
-  .kpi-grid{grid-template-columns:repeat(2,1fr)}
-  .charts-grid{grid-template-columns:repeat(2,1fr)}
-  .pinned-grid{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:767px){
-  body{padding:0}
-  .app-shell{max-width:100%;height:100dvh;border-radius:0;box-shadow:none}
-  .sidebar{display:none}
-  .topbar{padding:0 16px;gap:8px}
-  .topbar-search,.topbar-date{display:none}
-  .view-container{padding:16px;padding-bottom:calc(var(--bottom-nav-h) + env(safe-area-inset-bottom,0px) + 16px)}
-  .bottom-nav{display:flex}
-  /* KPIs: horizontal scroll-snap */
-  .kpi-grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;padding-bottom:8px;
-    -webkit-overflow-scrolling:touch}
-  .kpi-grid .card{min-width:200px;flex-shrink:0;scroll-snap-align:start}
-  .kpi-value{font-size:24px}
-  /* Charts single col */
-  .charts-grid{grid-template-columns:1fr}
-  .pinned-grid{grid-template-columns:1fr}
-  .chat-layout{height:calc(100dvh - var(--topbar-h) - var(--bottom-nav-h) - env(safe-area-inset-bottom,0px) - 32px)}
-  .msg-bubble{max-width:86%}
-  /* Filter: bottom sheet */
-  .filter-overlay{align-items:flex-end;padding-top:0}
-  .filter-panel{width:100%;max-width:100%;border-radius:var(--radius-card) var(--radius-card) 0 0;
-    max-height:70vh;overflow-y:auto}
-}
-@media(min-width:1400px){.kpi-value{font-size:32px}}
-@media(hover:none){.nav-tooltip{display:none}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
+  <title>Astera Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
-<div class="app-shell">
+  <div class="app-shell">
 
-  <!-- ═══════════════ SIDEBAR ═══════════════ -->
-  <nav class="sidebar" aria-label="Primary navigation">
-    <div class="sidebar-logo">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 2L13.5 8.5L20 11L13.5 13.5L11 20L8.5 13.5L2 11L8.5 8.5L11 2Z" fill="#fff" fill-opacity=".9"/></svg>
-    </div>
-    <button class="nav-item active" onclick="switchView('chat')"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="nav-tooltip">Chat</span></button>
-    <button class="nav-item" onclick="switchView('dashboard')"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span class="nav-tooltip">Dashboard</span></button>
-    <button class="nav-item" onclick="switchView('pipeline')"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="nav-tooltip">Pipelines</span></button>
-    <div class="sidebar-spacer"></div>
-    <button class="nav-item"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="nav-tooltip">Settings</span></button>
-    <div class="sidebar-avatar">BK</div>
-  </nav>
-
-  <!-- ═══════════════ MAIN ═══════════════ -->
-  <div class="main-area">
-    <header class="topbar">
-      <span class="topbar-title" id="topbar-title">Chat</span>
-      <div class="topbar-search">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" placeholder="Search pipelines, metrics…" aria-label="Search"/>
+    <!-- ═══════════════ SIDEBAR ═══════════════ -->
+    <nav class="sidebar" aria-label="Primary navigation">
+      <div class="sidebar-logo">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M11 2L13.5 8.5L20 11L13.5 13.5L11 20L8.5 13.5L2 11L8.5 8.5L11 2Z" fill="#fff" fill-opacity=".9" />
+        </svg>
       </div>
-      <div class="topbar-date">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Oct 1 – Nov 4, 2026
-      </div>
-      <button class="topbar-btn notif-dot" aria-label="Notifications">
-        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      </button>
-    </header>
+      <button class="nav-item active" onclick="switchView('chat')"><svg width="20" height="20" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg><span class="nav-tooltip">Chat</span></button>
+      <button class="nav-item" onclick="switchView('dashboard')"><svg width="20" height="20" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+        </svg><span class="nav-tooltip">Dashboard</span></button>
+      <button class="nav-item" onclick="switchView('pipeline')"><svg width="20" height="20" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg><span class="nav-tooltip">Pipelines</span></button>
+      <div class="sidebar-spacer"></div>
+      <button class="nav-item"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg><span class="nav-tooltip">Settings</span></button>
+      <div class="sidebar-avatar">BK</div>
+    </nav>
 
-    <div class="view-container">
+    <!-- ═══════════════ MAIN ═══════════════ -->
+    <div class="main-area">
+      <header class="topbar">
+        <span class="topbar-title" id="topbar-title">Chat</span>
+        <div class="topbar-search">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input type="text" placeholder="Search pipelines, metrics…" aria-label="Search" />
+        </div>
+        <div class="topbar-date">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          Oct 1 – Nov 4, 2026
+        </div>
+        <button class="topbar-btn notif-dot" aria-label="Notifications">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+        </button>
+      </header>
 
-      <!-- ══════════════ CHAT VIEW ══════════════ -->
-      <div class="view active" id="view-chat">
-        <div class="chat-layout">
-          <div class="chat-messages" id="chat-messages">
+      <div class="view-container">
 
-            <!-- Greeting card -->
-            <div class="chat-greeting" id="chat-greeting">
-              <!-- Cute cat mascot holding a coffee mug — hand-drawn SVG -->
-              <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto;display:block">
-                <!-- Body / torso -->
-                <ellipse cx="60" cy="82" rx="30" ry="24" fill="#E8EEFB"/>
-                <!-- Head -->
-                <circle cx="60" cy="48" r="26" fill="#F3F6FC" stroke="#B8C6E0" stroke-width="2"/>
-                <!-- Left ear -->
-                <path d="M38 30 L30 12 L48 24 Z" fill="#F3F6FC" stroke="#B8C6E0" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M36 27 L32 17 L44 24 Z" fill="#FDEAED"/>
-                <!-- Right ear -->
-                <path d="M82 30 L90 12 L72 24 Z" fill="#F3F6FC" stroke="#B8C6E0" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M84 27 L88 17 L76 24 Z" fill="#FDEAED"/>
-                <!-- Eyes -->
-                <ellipse cx="50" cy="46" rx="4" ry="4.5" fill="#3A4670"/>
-                <ellipse cx="70" cy="46" rx="4" ry="4.5" fill="#3A4670"/>
-                <circle cx="48.5" cy="44.5" r="1.5" fill="#fff"/>
-                <circle cx="68.5" cy="44.5" r="1.5" fill="#fff"/>
-                <!-- Nose -->
-                <ellipse cx="60" cy="53" rx="2.5" ry="2" fill="#E8455F" opacity=".7"/>
-                <!-- Mouth -->
-                <path d="M55 56 Q60 62 65 56" stroke="#B8C6E0" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-                <!-- Whiskers -->
-                <line x1="28" y1="48" x2="44" y2="50" stroke="#B8C6E0" stroke-width="1.2" stroke-linecap="round"/>
-                <line x1="28" y1="54" x2="44" y2="53" stroke="#B8C6E0" stroke-width="1.2" stroke-linecap="round"/>
-                <line x1="92" y1="48" x2="76" y2="50" stroke="#B8C6E0" stroke-width="1.2" stroke-linecap="round"/>
-                <line x1="92" y1="54" x2="76" y2="53" stroke="#B8C6E0" stroke-width="1.2" stroke-linecap="round"/>
-                <!-- Left paw -->
-                <ellipse cx="42" cy="94" rx="8" ry="5" fill="#F3F6FC" stroke="#B8C6E0" stroke-width="1.5"/>
-                <!-- Right paw (holding mug) -->
-                <ellipse cx="78" cy="94" rx="8" ry="5" fill="#F3F6FC" stroke="#B8C6E0" stroke-width="1.5"/>
-                <!-- Coffee mug -->
-                <rect x="82" y="76" width="18" height="20" rx="4" fill="#D1DCF5" stroke="#4F74B8" stroke-width="2"/>
-                <!-- Mug handle -->
-                <path d="M100 82 C108 82 108 92 100 92" stroke="#4F74B8" stroke-width="2" fill="none" stroke-linecap="round"/>
-                <!-- Steam -->
-                <path d="M87 72 Q89 66 87 60" stroke="#B8C6E0" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".5"/>
-                <path d="M93 74 Q95 68 93 62" stroke="#B8C6E0" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".5"/>
-                <!-- Tail -->
-                <path d="M30 88 Q14 72 22 58" stroke="#B8C6E0" stroke-width="3" fill="none" stroke-linecap="round"/>
-              </svg>
-              <h2>Hi, Batool! What are we looking at today?</h2>
-              <p>Ask me anything about your YouTube covers, Fiverr orders, or pipeline health.</p>
-              <div class="suggestion-chips">
-                <button class="chip" onclick="sendSuggestion(this.textContent.trim())">📈 Show cover CTR trend</button>
-                <button class="chip" onclick="sendSuggestion(this.textContent.trim())">🌍 Fiverr orders by region</button>
-                <button class="chip" onclick="sendSuggestion(this.textContent.trim())">⚠️ What failed in the last run?</button>
+        <!-- ══════════════ CHAT VIEW ══════════════ -->
+        <div class="view active" id="view-chat">
+          <div class="chat-layout">
+            <div class="chat-messages" id="chat-messages">
+
+              <!-- Greeting card -->
+              <div class="chat-greeting" id="chat-greeting">
+                <!-- Cute cat mascot holding a coffee mug — hand-drawn SVG -->
+                <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg"
+                  style="margin:0 auto;display:block">
+                  <!-- Body / torso -->
+                  <ellipse cx="60" cy="82" rx="30" ry="24" fill="#E8EEFB" />
+                  <!-- Head -->
+                  <circle cx="60" cy="48" r="26" fill="#F3F6FC" stroke="#B8C6E0" stroke-width="2" />
+                  <!-- Left ear -->
+                  <path d="M38 30 L30 12 L48 24 Z" fill="#F3F6FC" stroke="#B8C6E0" stroke-width="2"
+                    stroke-linejoin="round" />
+                  <path d="M36 27 L32 17 L44 24 Z" fill="#FDEAED" />
+                  <!-- Right ear -->
+                  <path d="M82 30 L90 12 L72 24 Z" fill="#F3F6FC" stroke="#B8C6E0" stroke-width="2"
+                    stroke-linejoin="round" />
+                  <path d="M84 27 L88 17 L76 24 Z" fill="#FDEAED" />
+                  <!-- Eyes -->
+                  <ellipse cx="50" cy="46" rx="4" ry="4.5" fill="#3A4670" />
+                  <ellipse cx="70" cy="46" rx="4" ry="4.5" fill="#3A4670" />
+                  <circle cx="48.5" cy="44.5" r="1.5" fill="#fff" />
+                  <circle cx="68.5" cy="44.5" r="1.5" fill="#fff" />
+                  <!-- Nose -->
+                  <ellipse cx="60" cy="53" rx="2.5" ry="2" fill="#E8455F" opacity=".7" />
+                  <!-- Mouth -->
+                  <path d="M55 56 Q60 62 65 56" stroke="#B8C6E0" stroke-width="1.8" fill="none"
+                    stroke-linecap="round" />
+                  <!-- Whiskers -->
+                  <line x1="28" y1="48" x2="44" y2="50" stroke="#B8C6E0" stroke-width="1.2" stroke-linecap="round" />
+                  <line x1="28" y1="54" x2="44" y2="53" stroke="#B8C6E0" stroke-width="1.2" stroke-linecap="round" />
+                  <line x1="92" y1="48" x2="76" y2="50" stroke="#B8C6E0" stroke-width="1.2" stroke-linecap="round" />
+                  <line x1="92" y1="54" x2="76" y2="53" stroke="#B8C6E0" stroke-width="1.2" stroke-linecap="round" />
+                  <!-- Left paw -->
+                  <ellipse cx="42" cy="94" rx="8" ry="5" fill="#F3F6FC" stroke="#B8C6E0" stroke-width="1.5" />
+                  <!-- Right paw (holding mug) -->
+                  <ellipse cx="78" cy="94" rx="8" ry="5" fill="#F3F6FC" stroke="#B8C6E0" stroke-width="1.5" />
+                  <!-- Coffee mug -->
+                  <rect x="82" y="76" width="18" height="20" rx="4" fill="#D1DCF5" stroke="#4F74B8" stroke-width="2" />
+                  <!-- Mug handle -->
+                  <path d="M100 82 C108 82 108 92 100 92" stroke="#4F74B8" stroke-width="2" fill="none"
+                    stroke-linecap="round" />
+                  <!-- Steam -->
+                  <path d="M87 72 Q89 66 87 60" stroke="#B8C6E0" stroke-width="1.5" fill="none" stroke-linecap="round"
+                    opacity=".5" />
+                  <path d="M93 74 Q95 68 93 62" stroke="#B8C6E0" stroke-width="1.5" fill="none" stroke-linecap="round"
+                    opacity=".5" />
+                  <!-- Tail -->
+                  <path d="M30 88 Q14 72 22 58" stroke="#B8C6E0" stroke-width="3" fill="none" stroke-linecap="round" />
+                </svg>
+                <h2>Hi, Batool! What are we looking at today?</h2>
+                <p>Ask me anything about your YouTube covers, Fiverr orders, or pipeline health.</p>
+                <div class="suggestion-chips">
+                  <button class="chip" onclick="sendSuggestion(this.textContent.trim())">📈 Show cover CTR
+                    trend</button>
+                  <button class="chip" onclick="sendSuggestion(this.textContent.trim())">🌍 Fiverr orders by
+                    region</button>
+                  <button class="chip" onclick="sendSuggestion(this.textContent.trim())">⚠️ What failed in the last
+                    run?</button>
+                </div>
               </div>
+
             </div>
 
-          </div>
+            <!-- Always-visible demo bar (reviewer shortcut) -->
+            <div class="demo-bar">
+              <span style="font-size:11px;color:var(--text-muted);align-self:center;white-space:nowrap">Try:</span>
+              <button class="chip" onclick="fireDemoChat('ctr')">📈 CTR trend</button>
+              <button class="chip" onclick="fireDemoChat('region')">🌍 Fiverr by region</button>
+              <button class="chip" onclick="fireDemoChat('failed')">⚠️ What failed?</button>
+            </div>
 
-          <!-- Input bar -->
-          <div class="chat-input-wrap">
-            <div class="chat-input-row">
-              <textarea id="chat-input" rows="1" placeholder="Ask about your data…" aria-label="Chat message"></textarea>
-              <button class="icon-btn" aria-label="Attach"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
-              <button class="send-btn" aria-label="Send" onclick="handleSend()">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <!-- Input bar -->
+            <div class="chat-input-wrap">
+              <div class="chat-input-row">
+                <textarea id="chat-input" rows="1" placeholder="Ask about your data…"
+                  aria-label="Chat message"></textarea>
+                <button class="icon-btn" aria-label="Attach"><svg width="16" height="16" fill="none"
+                    stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path
+                      d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                  </svg></button>
+                <button class="send-btn" aria-label="Send" onclick="handleSend()">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════ DASHBOARD VIEW ══════════════ -->
+        <div class="view" id="view-dashboard">
+
+          <!-- Header -->
+          <div class="dash-header">
+            <h1>Dashboard</h1>
+            <span class="dash-meta" id="dash-freshness">Updated 12 min ago</span>
+            <span id="dash-status-pill"></span>
+            <div class="dash-actions">
+              <button class="btn-ghost" onclick="openFilter()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                </svg>
+                Filters
+              </button>
+              <button class="btn-ghost">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export
               </button>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- ══════════════ DASHBOARD VIEW ══════════════ -->
-      <div class="view" id="view-dashboard">
+          <!-- Failure banner -->
+          <div class="card fail-banner" id="fail-banner">
+            <svg width="20" height="20" fill="none" stroke="var(--accent-coral)" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <div class="fail-text">
+              <strong>Fiverr Regional Order Sync failed</strong>
+              Join key mismatch — "region_iso3" not found. Click Re-run after fix.
+            </div>
+            <button class="btn-primary" id="rerun-btn" onclick="handleRerun()">Re-run</button>
+          </div>
 
-        <!-- Header -->
-        <div class="dash-header">
-          <h1>Dashboard</h1>
-          <span class="dash-meta" id="dash-freshness">Updated 12 min ago</span>
-          <span id="dash-status-pill"></span>
-          <div class="dash-actions">
-            <button class="btn-ghost" onclick="openFilter()">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-              Filters
-            </button>
-            <button class="btn-ghost">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Export
-            </button>
-          </div>
-        </div>
+          <!-- KPIs -->
+          <div class="kpi-grid" id="kpi-grid"></div>
 
-        <!-- Failure banner -->
-        <div class="card fail-banner" id="fail-banner">
-          <svg width="20" height="20" fill="none" stroke="var(--accent-coral)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <div class="fail-text">
-            <strong>Fiverr Regional Order Sync failed</strong>
-            Join key mismatch — "region_iso3" not found. Click Re-run after fix.
+          <!-- Charts -->
+          <div class="charts-grid" id="charts-grid">
+            <div class="card">
+              <div class="card-title">Cover CTR (%) · Weekly</div>
+              <div class="chart-canvas-wrap"><canvas id="chart-ctr"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Fiverr Orders by Region</div>
+              <div class="chart-canvas-wrap"><canvas id="chart-region-bar"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Revenue Split</div>
+              <div class="chart-canvas-wrap"><canvas id="chart-donut"></canvas></div>
+            </div>
           </div>
-          <button class="btn-primary" id="rerun-btn" onclick="handleRerun()">Re-run</button>
-        </div>
 
-        <!-- KPIs -->
-        <div class="kpi-grid" id="kpi-grid"></div>
+          <!-- Pinned from chat -->
+          <div class="pinned-section" id="pinned-section" style="display:none">
+            <div class="card-title">📌 Pinned from Chat</div>
+            <div class="pinned-grid" id="pinned-grid"></div>
+          </div>
 
-        <!-- Charts -->
-        <div class="charts-grid" id="charts-grid">
-          <div class="card">
-            <div class="card-title">Cover CTR (%) · Weekly</div>
-            <div class="chart-canvas-wrap"><canvas id="chart-ctr"></canvas></div>
-          </div>
-          <div class="card">
-            <div class="card-title">Fiverr Orders by Region</div>
-            <div class="chart-canvas-wrap"><canvas id="chart-region-bar"></canvas></div>
-          </div>
-          <div class="card">
-            <div class="card-title">Revenue Split</div>
-            <div class="chart-canvas-wrap"><canvas id="chart-donut"></canvas></div>
-          </div>
         </div>
 
-        <!-- Pinned from chat -->
-        <div class="pinned-section" id="pinned-section" style="display:none">
-          <div class="card-title">📌 Pinned from Chat</div>
-          <div class="pinned-grid" id="pinned-grid"></div>
-        </div>
+        <!-- ══════════════ PIPELINE DETAIL VIEW ══════════════ -->
+        <div class="view" id="view-pipeline">
 
-      </div>
+          <!-- Pipeline selector -->
+          <div class="pl-selector" id="pl-selector"></div>
 
-      <!-- ══════════════ PIPELINE DETAIL VIEW ══════════════ -->
-      <div class="view" id="view-pipeline">
-
-        <!-- Pipeline selector -->
-        <div class="pl-selector" id="pl-selector"></div>
-
-        <!-- Status header -->
-        <div class="pl-status-bar" id="pl-status-bar">
-          <h2 id="pl-name">—</h2>
-          <span id="pl-pill"></span>
-          <span class="pl-meta" id="pl-lastrun"></span>
-          <div style="margin-left:auto;display:flex;gap:8px">
-            <button class="btn-ghost" id="pl-rerun-btn" onclick="plRerun()">
-              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
-              Re-run
-            </button>
-            <button class="btn-primary" onclick="showToast('Logs viewer coming soon')">
-              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><polyline points="8 2 8 6"/><polyline points="16 2 16 6"/></svg>
-              View Logs
-            </button>
+          <!-- Status header -->
+          <div class="pl-status-bar" id="pl-status-bar">
+            <h2 id="pl-name">—</h2>
+            <span id="pl-pill"></span>
+            <span class="pl-meta" id="pl-lastrun"></span>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <button class="btn-ghost" id="pl-rerun-btn" onclick="plRerun()">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 .49-3.6" />
+                </svg>
+                Re-run
+              </button>
+              <button class="btn-primary" onclick="showToast('Logs viewer coming soon')">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="14" rx="2" />
+                  <polyline points="8 2 8 6" />
+                  <polyline points="16 2 16 6" />
+                </svg>
+                View Logs
+              </button>
+            </div>
           </div>
-        </div>
 
-        <!-- DESKTOP: SVG canvas + side panel -->
-        <div class="pl-canvas-layout">
-          <div class="pl-canvas-wrap" id="pl-canvas-wrap">
-            <!-- SVG connectors rendered by JS -->
-            <svg class="pl-svg-canvas" id="pl-svg" xmlns="http://www.w3.org/2000/svg"></svg>
-            <!-- Nodes rendered by JS -->
-            <div class="pl-nodes" id="pl-nodes"></div>
-          </div>
-          <!-- Side panel -->
-          <div class="pl-side-panel" id="pl-side-panel">
-            <div class="pl-panel-empty" id="pl-panel-empty">
-              <div>
-                <div style="font-size:28px;margin-bottom:8px">👈</div>
-                Click a node to<br/>inspect &amp; edit
+          <!-- DESKTOP: SVG canvas + side panel -->
+          <div class="pl-canvas-layout">
+            <div class="pl-canvas-wrap" id="pl-canvas-wrap">
+              <!-- SVG connectors rendered by JS -->
+              <svg class="pl-svg-canvas" id="pl-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+              <!-- Nodes rendered by JS -->
+              <div class="pl-nodes" id="pl-nodes"></div>
+            </div>
+            <!-- Side panel -->
+            <div class="pl-side-panel" id="pl-side-panel">
+              <div class="pl-panel-empty" id="pl-panel-empty">
+                <div>
+                  <div style="font-size:28px;margin-bottom:8px">👈</div>
+                  Click a node to<br />inspect &amp; edit
+                </div>
+              </div>
+              <div id="pl-panel-content" style="display:none;flex:1;display:flex;flex-direction:column;overflow:hidden">
+                <div class="pl-panel-header" id="pl-panel-header"></div>
+                <div class="pl-panel-body" id="pl-panel-body"></div>
+                <div class="pl-panel-footer" id="pl-panel-footer"></div>
               </div>
             </div>
-            <div id="pl-panel-content" style="display:none;flex:1;display:flex;flex-direction:column;overflow:hidden">
-              <div class="pl-panel-header" id="pl-panel-header"></div>
-              <div class="pl-panel-body" id="pl-panel-body"></div>
-              <div class="pl-panel-footer" id="pl-panel-footer"></div>
-            </div>
           </div>
+
+          <!-- MOBILE: Vertical stepper -->
+          <div class="pl-stepper" id="pl-stepper"></div>
+
         </div>
 
-        <!-- MOBILE: Vertical stepper -->
-        <div class="pl-stepper" id="pl-stepper"></div>
+      </div><!-- /view-container -->
+    </div><!-- /main-area -->
 
+    <!-- Bottom nav (mobile) -->
+    <nav class="bottom-nav">
+      <button class="bnav-item active" onclick="switchView('chat')"><svg width="22" height="22" fill="none"
+          stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>Chat<div class="bnav-dot"></div></button>
+      <button class="bnav-item" onclick="switchView('dashboard')"><svg width="22" height="22" fill="none"
+          stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+        </svg>Dashboard<div class="bnav-dot"></div></button>
+      <button class="bnav-item" onclick="switchView('pipeline')"><svg width="22" height="22" fill="none"
+          stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>Pipelines<div class="bnav-dot"></div></button>
+    </nav>
+
+  </div><!-- /app-shell -->
+
+  <!-- Bottom sheet (mobile step editor) -->
+  <div class="bs-overlay" id="bs-overlay" onclick="if(event.target===this)closeBS()">
+    <div class="bs-sheet" id="bs-sheet">
+      <div class="bs-drag" id="bs-drag"></div>
+      <div class="bs-head">
+        <h3 id="bs-title">Step</h3>
+        <button class="bs-close" onclick="closeBS()" aria-label="Close">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
       </div>
-
-    </div><!-- /view-container -->
-  </div><!-- /main-area -->
-
-  <!-- Bottom nav (mobile) -->
-  <nav class="bottom-nav">
-    <button class="bnav-item active" onclick="switchView('chat')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat<div class="bnav-dot"></div></button>
-    <button class="bnav-item" onclick="switchView('dashboard')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Dashboard<div class="bnav-dot"></div></button>
-    <button class="bnav-item" onclick="switchView('pipeline')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Pipelines<div class="bnav-dot"></div></button>
-  </nav>
-
-</div><!-- /app-shell -->
-
-<!-- Bottom sheet (mobile step editor) -->
-<div class="bs-overlay" id="bs-overlay" onclick="if(event.target===this)closeBS()">
-  <div class="bs-sheet" id="bs-sheet">
-    <div class="bs-drag" id="bs-drag"></div>
-    <div class="bs-head">
-      <h3 id="bs-title">Step</h3>
-      <button class="bs-close" onclick="closeBS()" aria-label="Close">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="bs-body" id="bs-body"></div>
-    <div class="bs-foot" id="bs-foot">
-      <button class="btn-primary bs-rerun" id="bs-rerun-btn" onclick="plRerunFromStep()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
-        Re-run from this step
-      </button>
-      <button class="btn-ghost" style="justify-content:center" onclick="closeBS()">Done</button>
+      <div class="bs-body" id="bs-body"></div>
+      <div class="bs-foot" id="bs-foot">
+        <button class="btn-primary bs-rerun" id="bs-rerun-btn" onclick="plRerunFromStep()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 1 0 .49-3.6" />
+          </svg>
+          Re-run from this step
+        </button>
+        <button class="btn-ghost" style="justify-content:center" onclick="closeBS()">Done</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Filter overlay -->
-<div class="filter-overlay" id="filter-overlay" onclick="if(event.target===this)closeFilter()">
-  <div class="filter-panel">
-    <h3>Filters</h3>
-    <div class="filter-group">
-      <label>Date Range</label>
-      <div style="display:flex;gap:8px">
-        <input type="date" value="2026-10-01"/>
-        <input type="date" value="2026-11-04"/>
+  <!-- Filter overlay -->
+  <div class="filter-overlay" id="filter-overlay" onclick="if(event.target===this)closeFilter()">
+    <div class="filter-panel">
+      <h3>Filters</h3>
+      <div class="filter-group">
+        <label>Date Range</label>
+        <div style="display:flex;gap:8px">
+          <input type="date" value="2026-10-01" />
+          <input type="date" value="2026-11-04" />
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Region</label>
+        <select>
+          <option>All Regions</option>
+          <option>N. America</option>
+          <option>Europe</option>
+          <option>Asia-Pacific</option>
+          <option>MENA</option>
+          <option>Latin America</option>
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-ghost" onclick="closeFilter()">Cancel</button>
+        <button class="btn-primary" onclick="closeFilter();showToast('Filters applied')">Apply</button>
       </div>
     </div>
-    <div class="filter-group">
-      <label>Region</label>
-      <select>
-        <option>All Regions</option>
-        <option>N. America</option>
-        <option>Europe</option>
-        <option>Asia-Pacific</option>
-        <option>MENA</option>
-        <option>Latin America</option>
-      </select>
-    </div>
-    <div class="filter-actions">
-      <button class="btn-ghost" onclick="closeFilter()">Cancel</button>
-      <button class="btn-primary" onclick="closeFilter();showToast('Filters applied')">Apply</button>
-    </div>
   </div>
-</div>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
 
-<script>
-/* ═══════════════════════════════════════════════════
-   SAMPLE DATA
-═══════════════════════════════════════════════════ */
-const DATA = {
-  kpis: [
-    { label:'Avg. Cover CTR',  value:'8.74%',  delta:'+14.2%', trend:'up',   icon:'📈', tile:'tile-blue'   },
-    { label:'Fiverr Orders',   value:'1,284',  delta:'+9.6%',  trend:'up',   icon:'🛒', tile:'tile-green'  },
-    { label:'Revenue (Oct)',   value:'$108.1K', delta:'+18%',   trend:'up',   icon:'💰', tile:'tile-yellow' },
-    { label:'Failed Runs',     value:'3',       delta:'+2',     trend:'down', icon:'⚠️', tile:'tile-coral'  }
-  ],
+  <script>
+    /* ═══════════════════════════════════════════════════
+       SAMPLE DATA
+    ═══════════════════════════════════════════════════ */
+    const DATA = {
+      kpis: [
+        { label: 'Avg. Cover CTR', value: '8.74%', delta: '+14.2%', trend: 'up', icon: '📈', tile: 'tile-blue' },
+        { label: 'Fiverr Orders', value: '1,284', delta: '+9.6%', trend: 'up', icon: '🛒', tile: 'tile-green' },
+        { label: 'Revenue (Oct)', value: '$108.1K', delta: '+18%', trend: 'up', icon: '💰', tile: 'tile-yellow' },
+        { label: 'Failed Runs', value: '3', delta: '+2', trend: 'down', icon: '⚠️', tile: 'tile-coral' }
+      ],
 
-  ctrWeekly: {
-    labels:['Sep 2','Sep 9','Sep 16','Sep 23','Sep 30','Oct 7','Oct 14','Oct 21','Oct 28','Nov 4'],
-    values:[5.1,5.6,5.3,6.0,6.8,7.2,7.9,8.1,8.6,8.74]
-  },
+      ctrWeekly: {
+        labels: ['Sep 2', 'Sep 9', 'Sep 16', 'Sep 23', 'Sep 30', 'Oct 7', 'Oct 14', 'Oct 21', 'Oct 28', 'Nov 4'],
+        values: [5.1, 5.6, 5.3, 6.0, 6.8, 7.2, 7.9, 8.1, 8.6, 8.74]
+      },
 
-  fiverrRegion: {
-    labels:['N. America','Europe','Asia-Pac','MENA','L. America'],
-    values:[42800,31200,19600,8400,6100],
-    orders:[488,347,231,128,90],
-    colors:['#4F74B8','#4CAF6E','#F7C948','#E8455F','#5B7FC7']
-  },
+      fiverrRegion: {
+        labels: ['N. America', 'Europe', 'Asia-Pac', 'MENA', 'L. America'],
+        values: [42800, 31200, 19600, 8400, 6100],
+        orders: [488, 347, 231, 128, 90],
+        colors: ['#4F74B8', '#4CAF6E', '#F7C948', '#E8455F', '#5B7FC7']
+      },
 
-  fiverrDonut: {
-    segments:[
-      {label:'N. America',pct:38,color:'#4F74B8'},
-      {label:'Europe',pct:27,color:'#4CAF6E'},
-      {label:'Asia-Pac',pct:18,color:'#F7C948'},
-      {label:'MENA',pct:10,color:'#E8455F'},
-      {label:'L. America',pct:7,color:'#5B7FC7'}
-    ]
-  },
+      fiverrDonut: {
+        segments: [
+          { label: 'N. America', pct: 38, color: '#4F74B8' },
+          { label: 'Europe', pct: 27, color: '#4CAF6E' },
+          { label: 'Asia-Pac', pct: 18, color: '#F7C948' },
+          { label: 'MENA', pct: 10, color: '#E8455F' },
+          { label: 'L. America', pct: 7, color: '#5B7FC7' }
+        ]
+      },
 
-  pipelines: [
-    {
-      id:'yt-cover-sync', name:'YouTube Cover Performance Sync', status:'Succeeded',
-      lastRun:'2026-11-04 14:32', duration:'2m 18s', rowsIn:94200, rowsOut:91870,
-      steps:[
-        {name:'Read Excel',icon:'📄',tile:'tile-blue',status:'Succeeded',duration:'0m 12s',
-         rowsIn:94200,rowsOut:94200,note:'cover_analytics_oct2026.xlsx (3 sheets merged)'},
-        {name:'Filter Rows',icon:'🔍',tile:'tile-yellow',status:'Succeeded',duration:'0m 08s',
-         rowsIn:94200,rowsOut:91870,note:'Dropped 2,330 rows with CTR < 0.1%'},
-        {name:'Join with Database',icon:'🔗',tile:'tile-green',status:'Succeeded',duration:'1m 44s',
-         rowsIn:91870,rowsOut:91870,note:'Left join on video_id → analytics.youtube_master'},
-        {name:'Transform',icon:'⚙️',tile:'tile-blue',status:'Succeeded',duration:'0m 14s',
-         rowsIn:91870,rowsOut:91870,note:'Computed weighted_ctr, thumbnail_style_code'}
-      ]
-    },
-    {
-      id:'fiverr-regional-sync', name:'Fiverr Regional Order Sync', status:'Failed',
-      lastRun:'2026-11-04 10:05', duration:'0m 47s', rowsIn:51400, rowsOut:0,
-      steps:[
-        {name:'Read Excel',icon:'📄',tile:'tile-blue',status:'Succeeded',duration:'0m 09s',
-         rowsIn:51400,rowsOut:51400,note:'fiverr_orders_regional_q4.xlsx'},
-        {name:'Filter Rows',icon:'🔍',tile:'tile-yellow',status:'Succeeded',duration:'0m 05s',
-         rowsIn:51400,rowsOut:49830,note:'Removed 1,570 test/sandbox orders'},
-        {name:'Join with Database',icon:'🔗',tile:'tile-coral',status:'Failed',duration:'0m 33s',
-         rowsIn:49830,rowsOut:0,note:'Attempted inner join on region_iso3',
-         error:{title:'Join key mismatch',detail:'Column "region_iso3" does not exist in fiverr.orders_dim. Expected: "region_code".'}},
-        {name:'Transform',icon:'⚙️',tile:'tile-blue',status:'Skipped',duration:'—',
-         rowsIn:0,rowsOut:0,note:'Skipped: upstream step failed'}
-      ]
+      pipelines: [
+        {
+          id: 'yt-cover-sync', name: 'YouTube Cover Performance Sync', status: 'Succeeded',
+          lastRun: '2026-11-04 14:32', duration: '2m 18s', rowsIn: 94200, rowsOut: 91870,
+          steps: [
+            {
+              name: 'Read Excel', icon: '📄', tile: 'tile-blue', status: 'Succeeded', duration: '0m 12s',
+              rowsIn: 94200, rowsOut: 94200, note: 'cover_analytics_oct2026.xlsx (3 sheets merged)'
+            },
+            {
+              name: 'Filter Rows', icon: '🔍', tile: 'tile-yellow', status: 'Succeeded', duration: '0m 08s',
+              rowsIn: 94200, rowsOut: 91870, note: 'Dropped 2,330 rows with CTR < 0.1%'
+            },
+            {
+              name: 'Join with Database', icon: '🔗', tile: 'tile-green', status: 'Succeeded', duration: '1m 44s',
+              rowsIn: 91870, rowsOut: 91870, note: 'Left join on video_id → analytics.youtube_master'
+            },
+            {
+              name: 'Transform', icon: '⚙️', tile: 'tile-blue', status: 'Succeeded', duration: '0m 14s',
+              rowsIn: 91870, rowsOut: 91870, note: 'Computed weighted_ctr, thumbnail_style_code'
+            }
+          ]
+        },
+        {
+          id: 'fiverr-regional-sync', name: 'Fiverr Regional Order Sync', status: 'Failed',
+          lastRun: '2026-11-04 10:05', duration: '0m 47s', rowsIn: 51400, rowsOut: 0,
+          steps: [
+            {
+              name: 'Read Excel', icon: '📄', tile: 'tile-blue', status: 'Succeeded', duration: '0m 09s',
+              rowsIn: 51400, rowsOut: 51400, note: 'fiverr_orders_regional_q4.xlsx'
+            },
+            {
+              name: 'Filter Rows', icon: '🔍', tile: 'tile-yellow', status: 'Succeeded', duration: '0m 05s',
+              rowsIn: 51400, rowsOut: 49830, note: 'Removed 1,570 test/sandbox orders'
+            },
+            {
+              name: 'Join with Database', icon: '🔗', tile: 'tile-coral', status: 'Failed', duration: '0m 33s',
+              rowsIn: 49830, rowsOut: 0, note: 'Attempted inner join on region_iso3',
+              error: { title: 'Join key mismatch', detail: 'Column "region_iso3" does not exist in fiverr.orders_dim. Expected: "region_code".' }
+            },
+            {
+              name: 'Transform', icon: '⚙️', tile: 'tile-blue', status: 'Skipped', duration: '—',
+              rowsIn: 0, rowsOut: 0, note: 'Skipped: upstream step failed'
+            }
+          ]
+        }
+      ],
+
+      /* Chat answer configs — mapped by keyword */
+      answers: {
+        ctr: {
+          type: 'line',
+          summary: '<strong>CTR is up 14.2%</strong> week-over-week. The "Dark Gradient + Bold Text" thumbnail style drove most of the October lift.',
+          labels: ['Sep 2', 'Sep 9', 'Sep 16', 'Sep 23', 'Sep 30', 'Oct 7', 'Oct 14', 'Oct 21', 'Oct 28', 'Nov 4'],
+          values: [5.1, 5.6, 5.3, 6.0, 6.8, 7.2, 7.9, 8.1, 8.6, 8.74],
+          color: '#4F74B8'
+        },
+        region: {
+          type: 'bar',
+          summary: '<strong>N. America leads</strong> with 488 orders (38%). Europe grew +22% month-over-month, the fastest-growing region.',
+          labels: ['N. America', 'Europe', 'Asia-Pac', 'MENA', 'L. America'],
+          values: [488, 347, 231, 128, 90],
+          color: ['#4F74B8', '#4CAF6E', '#F7C948', '#E8455F', '#5B7FC7']
+        },
+        failed: {
+          type: 'bar',
+          summary: '<strong>Fiverr Regional Sync failed</strong> at the Join step. Column "region_iso3" was renamed to "region_code" on Nov 1.',
+          labels: ['Read Excel', 'Filter Rows', 'Join DB', 'Transform'],
+          values: [51400, 49830, 0, 0],
+          color: ['#4CAF6E', '#4CAF6E', '#E8455F', '#9BA8C3']
+        }
+      }
+    };
+
+    /* ═══════════════════════════════════════════════════
+       STATE
+    ═══════════════════════════════════════════════════ */
+    let activeView = 'chat';
+    let activePipelineIdx = 1;
+    let dashRendered = false;
+    let pipelineStatus = 'Failed';      // tracks re-run state
+    let pinnedCharts = [];               // chat → dashboard pins
+    let chartInstances = {};             // track Chart.js instances for cleanup
+
+    /* ═══════════════════════════════════════════════════
+       NAVIGATION
+    ═══════════════════════════════════════════════════ */
+    const viewKeys = ['chat', 'dashboard', 'pipeline'];
+    const titleMap = { chat: 'Chat', dashboard: 'Dashboard', pipeline: 'Pipelines' };
+
+    function switchView(key) {
+      activeView = key;
+      document.querySelectorAll('.sidebar .nav-item').forEach((el, i) => {
+        if (i < 3) el.classList.toggle('active', viewKeys[i] === key);
+      });
+      document.querySelectorAll('.bnav-item').forEach((el, i) => el.classList.toggle('active', viewKeys[i] === key));
+      document.getElementById('topbar-title').textContent = titleMap[key];
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + key).classList.add('active');
+      if (key === 'dashboard') renderDashboard();
+      if (key === 'pipeline') renderPipeline();
     }
-  ],
 
-  /* Chat answer configs — mapped by keyword */
-  answers: {
-    ctr: {
-      type:'line',
-      summary:'<strong>CTR is up 14.2%</strong> week-over-week. The "Dark Gradient + Bold Text" thumbnail style drove most of the October lift.',
-      labels:['Sep 2','Sep 9','Sep 16','Sep 23','Sep 30','Oct 7','Oct 14','Oct 21','Oct 28','Nov 4'],
-      values:[5.1,5.6,5.3,6.0,6.8,7.2,7.9,8.1,8.6,8.74],
-      color:'#4F74B8'
-    },
-    region: {
-      type:'bar',
-      summary:'<strong>N. America leads</strong> with 488 orders (38%). Europe grew +22% month-over-month, the fastest-growing region.',
-      labels:['N. America','Europe','Asia-Pac','MENA','L. America'],
-      values:[488,347,231,128,90],
-      color:['#4F74B8','#4CAF6E','#F7C948','#E8455F','#5B7FC7']
-    },
-    failed: {
-      type:'bar',
-      summary:'<strong>Fiverr Regional Sync failed</strong> at the Join step. Column "region_iso3" was renamed to "region_code" on Nov 1.',
-      labels:['Read Excel','Filter Rows','Join DB','Transform'],
-      values:[51400,49830,0,0],
-      color:['#4CAF6E','#4CAF6E','#E8455F','#9BA8C3']
+    /* ═══════════════════════════════════════════════════
+       TOAST
+    ═══════════════════════════════════════════════════ */
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2400);
     }
-  }
-};
 
-/* ═══════════════════════════════════════════════════
-   STATE
-═══════════════════════════════════════════════════ */
-let activeView = 'chat';
-let activePipelineIdx = 1;
-let dashRendered = false;
-let pipelineStatus = 'Failed';      // tracks re-run state
-let pinnedCharts = [];               // chat → dashboard pins
-let chartInstances = {};             // track Chart.js instances for cleanup
+    /* ═══════════════════════════════════════════════════
+       FILTER
+    ═══════════════════════════════════════════════════ */
+    function openFilter() { document.getElementById('filter-overlay').classList.add('open'); }
+    function closeFilter() { document.getElementById('filter-overlay').classList.remove('open'); }
 
-/* ═══════════════════════════════════════════════════
-   NAVIGATION
-═══════════════════════════════════════════════════ */
-const viewKeys = ['chat','dashboard','pipeline'];
-const titleMap = {chat:'Chat',dashboard:'Dashboard',pipeline:'Pipelines'};
+    /* ═══════════════════════════════════════════════════
+       CHAT
+    ═══════════════════════════════════════════════════ */
 
-function switchView(key) {
-  activeView = key;
-  document.querySelectorAll('.sidebar .nav-item').forEach((el,i) => {
-    if (i < 3) el.classList.toggle('active', viewKeys[i] === key);
-  });
-  document.querySelectorAll('.bnav-item').forEach((el,i) => el.classList.toggle('active', viewKeys[i] === key));
-  document.getElementById('topbar-title').textContent = titleMap[key];
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + key).classList.add('active');
-  if (key === 'dashboard') renderDashboard();
-  if (key === 'pipeline')  renderPipeline();
-}
+    /* Direct demo trigger — bypasses text input, fires answer card immediately */
+    function fireDemoChat(ansKey) {
+      const labels = { ctr: '📈 Show cover CTR trend', region: '🌍 Fiverr orders by region', failed: '⚠️ What failed in the last run?' };
+      const greeting = document.getElementById('chat-greeting');
+      if (greeting) greeting.style.display = 'none';
+      const container = document.getElementById('chat-messages');
 
-/* ═══════════════════════════════════════════════════
-   TOAST
-═══════════════════════════════════════════════════ */
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2400);
-}
+      // User bubble
+      container.appendChild(makeBubble(labels[ansKey], true));
 
-/* ═══════════════════════════════════════════════════
-   FILTER
-═══════════════════════════════════════════════════ */
-function openFilter()  { document.getElementById('filter-overlay').classList.add('open'); }
-function closeFilter() { document.getElementById('filter-overlay').classList.remove('open'); }
-
-/* ═══════════════════════════════════════════════════
-   CHAT
-═══════════════════════════════════════════════════ */
-function sendSuggestion(text) {
-  document.getElementById('chat-input').value = text;
-  handleSend();
-}
-
-function handleSend() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-  input.style.height = 'auto';
-
-  const greeting = document.getElementById('chat-greeting');
-  if (greeting) greeting.style.display = 'none';
-
-  const container = document.getElementById('chat-messages');
-
-  // User bubble
-  container.appendChild(makeBubble(text, true));
-
-  // Typing indicator
-  const typing = document.createElement('div');
-  typing.className = 'msg-row';
-  typing.innerHTML = `<div class="msg-avatar avatar-ai">AS</div>
+      // Typing indicator
+      const typing = document.createElement('div');
+      typing.className = 'msg-row';
+      typing.innerHTML = `<div class="msg-avatar avatar-ai">AS</div>
     <div class="msg-bubble ai" style="padding:14px 18px"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
-  container.appendChild(typing);
-  container.scrollTop = container.scrollHeight;
+      container.appendChild(typing);
+      container.scrollTop = container.scrollHeight;
 
-  // Decide which answer
-  const low = text.toLowerCase();
-  let ansKey = 'ctr';
-  if (low.includes('region') || low.includes('fiverr') || low.includes('order')) ansKey = 'region';
-  if (low.includes('fail') || low.includes('error') || low.includes('run'))     ansKey = 'failed';
+      setTimeout(() => {
+        typing.remove();
+        const card = makeAnswerCard(ansKey);
+        container.appendChild(card);
+        container.scrollTop = container.scrollHeight;
+      }, 900);
+    }
 
-  setTimeout(() => {
-    typing.remove();
-    container.appendChild(makeAnswerCard(ansKey));
-    container.scrollTop = container.scrollHeight;
-  }, 1200 + Math.random() * 600);
-}
+    function sendSuggestion(text) {
+      document.getElementById('chat-input').value = text;
+      handleSend();
+    }
 
-function makeBubble(html, isUser) {
-  const row = document.createElement('div');
-  row.className = 'msg-row' + (isUser ? ' user' : '');
-  row.innerHTML = `<div class="msg-avatar ${isUser ? 'avatar-user' : 'avatar-ai'}">${isUser ? 'BK' : 'AS'}</div>
+    function handleSend() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      input.style.height = 'auto';
+
+      const greeting = document.getElementById('chat-greeting');
+      if (greeting) greeting.style.display = 'none';
+
+      const container = document.getElementById('chat-messages');
+      container.appendChild(makeBubble(text, true));
+
+      const typing = document.createElement('div');
+      typing.className = 'msg-row';
+      typing.innerHTML = `<div class="msg-avatar avatar-ai">AS</div>
+    <div class="msg-bubble ai" style="padding:14px 18px"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
+      container.appendChild(typing);
+      container.scrollTop = container.scrollHeight;
+
+      const low = text.toLowerCase();
+      let ansKey = 'ctr';
+      if (low.includes('region') || low.includes('fiverr') || low.includes('order')) ansKey = 'region';
+      if (low.includes('fail') || low.includes('error') || low.includes('run')) ansKey = 'failed';
+
+      setTimeout(() => {
+        typing.remove();
+        const card = makeAnswerCard(ansKey);
+        container.appendChild(card);
+        container.scrollTop = container.scrollHeight;
+      }, 1000 + Math.random() * 500);
+    }
+
+    function makeBubble(html, isUser) {
+      const row = document.createElement('div');
+      row.className = 'msg-row' + (isUser ? ' user' : '');
+      row.innerHTML = `<div class="msg-avatar ${isUser ? 'avatar-user' : 'avatar-ai'}">${isUser ? 'BK' : 'AS'}</div>
     <div class="msg-bubble ${isUser ? '' : 'ai'}">${html}</div>`;
-  return row;
-}
+      return row;
+    }
 
-/* Build an answer card with Chart.js chart + actions */
-function makeAnswerCard(ansKey) {
-  const ans = DATA.answers[ansKey];
-  const id = 'ac-' + Date.now();
+    /* ─── Answer card ─── */
+    function makeAnswerCard(ansKey) {
+      const ans = DATA.answers[ansKey];
+      const canvasId = 'ac-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
 
-  const row = document.createElement('div');
-  row.className = 'msg-row';
-  row.innerHTML = `<div class="msg-avatar avatar-ai">AS</div>
-    <div class="answer-card" data-key="${ansKey}" data-type="${ans.type}" data-id="${id}">
-      <div class="chart-box"><canvas id="${id}"></canvas></div>
-      <div class="summary">${ans.summary}</div>
-      <div class="answer-actions">
-        <button class="btn-ghost" onclick="pinThisChart(this)">📌 Pin to dashboard</button>
-        <button class="btn-ghost" onclick="switchView('pipeline')">🔧 View pipeline</button>
-        <button class="btn-ghost" onclick="toggleChartType(this)">🔄 Change chart</button>
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+
+      // Build the card HTML — canvas gets an explicit height so Chart.js has
+      // a real pixel size to work with the moment it renders
+      row.innerHTML = `
+    <div class="msg-avatar avatar-ai">AS</div>
+    <div class="answer-card" data-key="${ansKey}" data-type="${ans.type}" data-id="${canvasId}">
+      <div class="chart-box" style="position:relative;height:180px;margin-bottom:10px">
+        <canvas id="${canvasId}" style="display:block;width:100%;height:180px"></canvas>
+      </div>
+      <div class="summary" style="font-size:13px;color:var(--text-body);line-height:1.5;margin-bottom:12px">${ans.summary}</div>
+      <div class="answer-actions" style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-ghost" style="font-size:12px;padding:6px 12px;min-height:34px" onclick="pinThisChart(this)">📌 Pin to dashboard</button>
+        <button class="btn-ghost" style="font-size:12px;padding:6px 12px;min-height:34px" onclick="switchView('pipeline')">🔧 View pipeline</button>
+        <button class="btn-ghost" style="font-size:12px;padding:6px 12px;min-height:34px" onclick="toggleChartType(this)">🔄 Change chart</button>
       </div>
     </div>`;
 
-  // Render after DOM insertion (use requestAnimationFrame)
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    renderAnswerChart(id, ans.type, ans);
-  }));
-  return row;
-}
-
-function renderAnswerChart(canvasId, type, ans) {
-  const el = document.getElementById(canvasId);
-  if (!el) return;
-  if (chartInstances[canvasId]) { chartInstances[canvasId].destroy(); }
-
-  const isMultiColor = Array.isArray(ans.color);
-  chartInstances[canvasId] = new Chart(el, {
-    type: type,
-    data: {
-      labels: ans.labels,
-      datasets: [{
-        label: type === 'line' ? 'CTR %' : 'Count',
-        data: ans.values,
-        borderColor: isMultiColor ? ans.color[0] : ans.color,
-        backgroundColor: type === 'line'
-          ? (isMultiColor ? ans.color[0] + '33' : ans.color + '33')
-          : (isMultiColor ? ans.color : ans.color + 'CC'),
-        tension: 0.35,
-        fill: type === 'line',
-        borderWidth: 2,
-        borderRadius: type === 'bar' ? 6 : 0
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Plus Jakarta Sans' }, color: '#9BA8C3' } },
-        y: { grid: { color: '#EEF2FB' }, ticks: { font: { size: 10 }, color: '#9BA8C3' }, beginAtZero: type === 'bar' }
-      }
+      // Render chart AFTER a tick so the canvas is in the DOM with real dimensions
+      setTimeout(() => renderAnswerChart(canvasId, ans.type, ans), 60);
+      return row;
     }
-  });
-}
 
-/* Toggle bar ↔ line on an answer card */
-function toggleChartType(btn) {
-  const card = btn.closest('.answer-card');
-  const ansKey = card.dataset.key;
-  const currentType = card.dataset.type;
-  const newType = currentType === 'line' ? 'bar' : 'line';
-  card.dataset.type = newType;
-  const id = card.dataset.id;
-  const ans = DATA.answers[ansKey];
-  renderAnswerChart(id, newType, ans);
-}
+    /* Shared chart renderer — always destroys the previous instance first */
+    function renderAnswerChart(canvasId, type, ans) {
+      const el = document.getElementById(canvasId);
+      if (!el) return;
 
-/* Pin chart from chat → dashboard pinned section */
-function pinThisChart(btn) {
-  const card = btn.closest('.answer-card');
-  const ansKey = card.dataset.key;
-  const type = card.dataset.type;
-  pinnedCharts.push({ ansKey, type });
-  showToast('📌 Chart pinned to Dashboard');
-  // If dashboard already rendered, add it live
-  if (dashRendered) addPinnedChart(ansKey, type);
-}
+      // Destroy any existing Chart instance on this canvas
+      if (chartInstances[canvasId]) {
+        chartInstances[canvasId].destroy();
+        delete chartInstances[canvasId];
+      }
 
-function addPinnedChart(ansKey, type) {
-  const section = document.getElementById('pinned-section');
-  section.style.display = 'block';
-  const grid = document.getElementById('pinned-grid');
-  const ans = DATA.answers[ansKey];
-  const id = 'pin-' + Date.now();
-  const div = document.createElement('div');
-  div.className = 'card';
-  div.innerHTML = `<div class="card-title">${ans.summary.replace(/<[^>]+>/g,'').substring(0,40)}…</div>
-    <div class="chart-canvas-wrap"><canvas id="${id}"></canvas></div>`;
-  grid.appendChild(div);
-  requestAnimationFrame(() => renderAnswerChart(id, type, ans));
-}
+      const isMultiColor = Array.isArray(ans.color);
 
-/* Auto-resize textarea + Enter-to-send */
-document.addEventListener('DOMContentLoaded', () => {
-  const ta = document.getElementById('chat-input');
-  ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 120) + 'px'; });
-  ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
-});
+      chartInstances[canvasId] = new Chart(el, {
+        type,
+        data: {
+          labels: ans.labels,
+          datasets: [{
+            label: type === 'line' ? 'CTR %' : 'Value',
+            data: ans.values,
+            borderColor: isMultiColor ? ans.color[0] : ans.color,
+            backgroundColor: type === 'line'
+              ? (isMultiColor ? ans.color[0] + '33' : ans.color + '33')
+              : (isMultiColor ? ans.color : ans.color + 'CC'),
+            tension: 0.35,
+            fill: type === 'line',
+            borderWidth: 2,
+            borderRadius: type === 'bar' ? 6 : 0,
+            pointRadius: type === 'line' ? 3 : 0,
+            pointBackgroundColor: '#fff',
+            pointBorderColor: isMultiColor ? ans.color[0] : ans.color,
+            pointBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 320 },
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#9BA8C3', maxRotation: 30 } },
+            y: { grid: { color: '#EEF2FB' }, ticks: { font: { size: 10 }, color: '#9BA8C3' }, beginAtZero: type === 'bar' }
+          }
+        }
+      });
+    }
 
-/* ═══════════════════════════════════════════════════
-   DASHBOARD
-═══════════════════════════════════════════════════ */
-function renderDashboard() {
-  renderDashStatusPill();
-  renderFailBanner();
-  renderKPIs();
-  if (!dashRendered) { renderDashCharts(); dashRendered = true; }
-  // Render any pinned charts
-  pinnedCharts.forEach(p => addPinnedChart(p.ansKey, p.type));
-  pinnedCharts = []; // avoid duplicating on re-visit
-}
+    /* Toggle bar ↔ line — destroy + redraw on the SAME canvas */
+    function toggleChartType(btn) {
+      const card = btn.closest('.answer-card');
+      const ansKey = card.dataset.key;
+      const newType = card.dataset.type === 'line' ? 'bar' : 'line';
+      card.dataset.type = newType;
 
-function renderDashStatusPill() {
-  const el = document.getElementById('dash-status-pill');
-  const cls = pipelineStatus === 'Succeeded' ? 'pill-succeeded' : pipelineStatus === 'Running' ? 'pill-running' : 'pill-failed';
-  el.innerHTML = `<span class="status-pill ${cls}"><span class="dot"></span>${pipelineStatus}</span>`;
-}
+      const canvasId = card.dataset.id;
+      const ans = DATA.answers[ansKey];
+      // Update button label
+      btn.textContent = newType === 'line' ? '🔄 Bar chart' : '🔄 Line chart';
+      renderAnswerChart(canvasId, newType, ans);
+    }
 
-function renderFailBanner() {
-  document.getElementById('fail-banner').style.display = pipelineStatus === 'Failed' ? 'flex' : 'none';
-}
+    /* Pin to dashboard */
+    function pinThisChart(btn) {
+      const card = btn.closest('.answer-card');
+      const ansKey = card.dataset.key;
+      const type = card.dataset.type;
+      pinnedCharts.push({ ansKey, type });
+      showToast('📌 Pinned to Dashboard');
+      if (dashRendered) addPinnedChart(ansKey, type);
+    }
 
-function renderKPIs() {
-  const grid = document.getElementById('kpi-grid');
-  if (grid.children.length) return; // already done
-  DATA.kpis.forEach(k => {
-    const c = document.createElement('div');
-    c.className = 'card kpi-card';
-    c.innerHTML = `<div class="icon-tile ${k.tile}">${k.icon}</div>
+    function addPinnedChart(ansKey, type) {
+      const section = document.getElementById('pinned-section');
+      section.style.display = 'block';
+      const grid = document.getElementById('pinned-grid');
+      const ans = DATA.answers[ansKey];
+      const id = 'pin-' + Date.now();
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.innerHTML = `<div class="card-title" style="margin-bottom:8px">${ans.summary.replace(/<[^>]+>/g, '').substring(0, 42)}…</div>
+    <div class="chart-canvas-wrap" style="position:relative;height:180px"><canvas id="${id}" style="width:100%;height:180px"></canvas></div>`;
+      grid.appendChild(div);
+      setTimeout(() => renderAnswerChart(id, type, ans), 60);
+    }
+
+    /* Auto-resize textarea + Enter-to-send */
+    document.addEventListener('DOMContentLoaded', () => {
+      const ta = document.getElementById('chat-input');
+      if (!ta) return;
+      ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 120) + 'px'; });
+      ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
+    });
+
+    /* ═══════════════════════════════════════════════════
+       DASHBOARD
+    ═══════════════════════════════════════════════════ */
+    function renderDashboard() {
+      renderDashStatusPill();
+      renderFailBanner();
+      renderKPIs();
+      if (!dashRendered) {
+        dashRendered = true;
+        // Delay chart init by one frame so the view is visible and canvases have real pixel sizes
+        setTimeout(() => renderDashCharts(), 60);
+      }
+      // Render any pinned charts queued from chat
+      const toPin = [...pinnedCharts];
+      pinnedCharts = [];
+      toPin.forEach(p => addPinnedChart(p.ansKey, p.type));
+    }
+
+    function renderDashStatusPill() {
+      const el = document.getElementById('dash-status-pill');
+      const cls = pipelineStatus === 'Succeeded' ? 'pill-succeeded' : pipelineStatus === 'Running' ? 'pill-running' : 'pill-failed';
+      el.innerHTML = `<span class="status-pill ${cls}"><span class="dot"></span>${pipelineStatus}</span>`;
+    }
+
+    function renderFailBanner() {
+      document.getElementById('fail-banner').style.display = pipelineStatus === 'Failed' ? 'flex' : 'none';
+    }
+
+    function renderKPIs() {
+      const grid = document.getElementById('kpi-grid');
+      if (grid.children.length) return; // already done
+      DATA.kpis.forEach(k => {
+        const c = document.createElement('div');
+        c.className = 'card kpi-card';
+        c.innerHTML = `<div class="icon-tile ${k.tile}">${k.icon}</div>
       <div>
         <div class="kpi-label">${k.label}</div>
         <div class="kpi-value">${k.value}</div>
         <span class="kpi-delta ${k.trend}">${k.trend === 'up' ? '↑' : '↓'} ${k.delta}</span>
       </div>`;
-    grid.appendChild(c);
-  });
-}
+        grid.appendChild(c);
+      });
+    }
 
-function renderDashCharts() {
-  // 1 — CTR line
-  const d = DATA.ctrWeekly;
-  chartInstances['chart-ctr'] = new Chart(document.getElementById('chart-ctr'), {
-    type:'line',
-    data:{
-      labels: d.labels,
-      datasets:[{ label:'CTR %', data:d.values, borderColor:'#4F74B8', backgroundColor:'rgba(79,116,184,.15)',
-        tension:.35, fill:true, borderWidth:2, pointRadius:3, pointBackgroundColor:'#fff',
-        pointBorderColor:'#4F74B8', pointBorderWidth:2 }]
-    },
-    options: chartOpts(false)
-  });
+    function renderDashCharts() {
+      // 1 — CTR line
+      const d = DATA.ctrWeekly;
+      chartInstances['chart-ctr'] = new Chart(document.getElementById('chart-ctr'), {
+        type: 'line',
+        data: {
+          labels: d.labels,
+          datasets: [{
+            label: 'CTR %', data: d.values, borderColor: '#4F74B8', backgroundColor: 'rgba(79,116,184,.15)',
+            tension: .35, fill: true, borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#fff',
+            pointBorderColor: '#4F74B8', pointBorderWidth: 2
+          }]
+        },
+        options: chartOpts(false)
+      });
 
-  // 2 — Region bar
-  const r = DATA.fiverrRegion;
-  chartInstances['chart-region-bar'] = new Chart(document.getElementById('chart-region-bar'), {
-    type:'bar',
-    data:{
-      labels: r.labels,
-      datasets:[{ label:'Orders', data:r.orders, backgroundColor:r.colors, borderRadius:6, barPercentage:.65 }]
-    },
-    options: chartOpts(true)
-  });
+      // 2 — Region bar
+      const r = DATA.fiverrRegion;
+      chartInstances['chart-region-bar'] = new Chart(document.getElementById('chart-region-bar'), {
+        type: 'bar',
+        data: {
+          labels: r.labels,
+          datasets: [{ label: 'Orders', data: r.orders, backgroundColor: r.colors, borderRadius: 6, barPercentage: .65 }]
+        },
+        options: chartOpts(true)
+      });
 
-  // 3 — Donut
-  const seg = DATA.fiverrDonut.segments;
-  chartInstances['chart-donut'] = new Chart(document.getElementById('chart-donut'), {
-    type:'doughnut',
-    data:{
-      labels: seg.map(s=>s.label),
-      datasets:[{ data:seg.map(s=>s.pct), backgroundColor:seg.map(s=>s.color), borderWidth:0, hoverOffset:6 }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false, cutout:'62%',
-      plugins:{
-        legend:{ position:'right', labels:{ boxWidth:10, padding:10, font:{size:11,family:'Plus Jakarta Sans'}, color:'#6B7A99' } }
+      // 3 — Donut
+      const seg = DATA.fiverrDonut.segments;
+      chartInstances['chart-donut'] = new Chart(document.getElementById('chart-donut'), {
+        type: 'doughnut',
+        data: {
+          labels: seg.map(s => s.label),
+          datasets: [{ data: seg.map(s => s.pct), backgroundColor: seg.map(s => s.color), borderWidth: 0, hoverOffset: 6 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '62%',
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 10, padding: 10, font: { size: 11, family: 'Plus Jakarta Sans' }, color: '#6B7A99' } }
+          }
+        }
+      });
+    }
+
+    function chartOpts(beginZero) {
+      return {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Plus Jakarta Sans' }, color: '#9BA8C3' } },
+          y: { grid: { color: '#EEF2FB' }, ticks: { font: { size: 10 }, color: '#9BA8C3' }, beginAtZero: beginZero }
+        }
+      };
+    }
+
+    /* Re-run: Failed → Running → Succeeded */
+    function handleRerun() {
+      const btn = document.getElementById('rerun-btn');
+      btn.disabled = true;
+      btn.textContent = 'Running…';
+
+      pipelineStatus = 'Running';
+      renderDashStatusPill();
+      renderFailBanner();
+
+      // After 2.5s → Succeeded
+      setTimeout(() => {
+        pipelineStatus = 'Succeeded';
+        renderDashStatusPill();
+        renderFailBanner();
+        btn.disabled = false;
+        btn.textContent = 'Re-run';
+
+        // Update freshness
+        document.getElementById('dash-freshness').textContent = 'Updated just now';
+
+        // Also fix the pipeline data so Pipeline Detail reflects it
+        DATA.pipelines[1].status = 'Succeeded';
+        DATA.pipelines[1].steps[2].status = 'Succeeded';
+        DATA.pipelines[1].steps[2].rowsOut = 49830;
+        DATA.pipelines[1].steps[2].error = null;
+        DATA.pipelines[1].steps[3].status = 'Succeeded';
+        DATA.pipelines[1].steps[3].rowsIn = 49830;
+        DATA.pipelines[1].steps[3].rowsOut = 49830;
+        DATA.pipelines[1].rowsOut = 49830;
+        DATA.pipelines[1].duration = '1m 12s';
+
+        // Update KPI card for "Failed Runs"
+        DATA.kpis[3].value = '2';
+        DATA.kpis[3].delta = '+1';
+        const kpiCards = document.querySelectorAll('#kpi-grid .kpi-card');
+        if (kpiCards[3]) {
+          kpiCards[3].querySelector('.kpi-value').textContent = '2';
+          kpiCards[3].querySelector('.kpi-delta').innerHTML = '↓ +1';
+        }
+
+        showToast('✅ Pipeline succeeded');
+      }, 2500);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PIPELINE DETAIL — full implementation
+    ═══════════════════════════════════════════════════ */
+
+    /* ---- shared state ---- */
+    let selectedStepIdx = null;   // which step node is selected (desktop)
+    let bsStepIdx = null;         // which step is open in bottom sheet (mobile)
+
+    /* ---- entry point called by switchView ---- */
+    function renderPipeline() {
+      buildPipelineSelector();
+      buildStatusBar();
+      if (window.innerWidth >= 768) {
+        buildDesktopCanvas();
+      } else {
+        buildMobileStepper();
       }
     }
-  });
-}
 
-function chartOpts(beginZero) {
-  return {
-    responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false} },
-    scales:{
-      x:{ grid:{display:false}, ticks:{font:{size:10,family:'Plus Jakarta Sans'},color:'#9BA8C3'} },
-      y:{ grid:{color:'#EEF2FB'}, ticks:{font:{size:10},color:'#9BA8C3'}, beginAtZero:beginZero }
-    }
-  };
-}
-
-/* Re-run: Failed → Running → Succeeded */
-function handleRerun() {
-  const btn = document.getElementById('rerun-btn');
-  btn.disabled = true;
-  btn.textContent = 'Running…';
-
-  pipelineStatus = 'Running';
-  renderDashStatusPill();
-  renderFailBanner();
-
-  // After 2.5s → Succeeded
-  setTimeout(() => {
-    pipelineStatus = 'Succeeded';
-    renderDashStatusPill();
-    renderFailBanner();
-    btn.disabled = false;
-    btn.textContent = 'Re-run';
-
-    // Update freshness
-    document.getElementById('dash-freshness').textContent = 'Updated just now';
-
-    // Also fix the pipeline data so Pipeline Detail reflects it
-    DATA.pipelines[1].status = 'Succeeded';
-    DATA.pipelines[1].steps[2].status = 'Succeeded';
-    DATA.pipelines[1].steps[2].rowsOut = 49830;
-    DATA.pipelines[1].steps[2].error = null;
-    DATA.pipelines[1].steps[3].status = 'Succeeded';
-    DATA.pipelines[1].steps[3].rowsIn = 49830;
-    DATA.pipelines[1].steps[3].rowsOut = 49830;
-    DATA.pipelines[1].rowsOut = 49830;
-    DATA.pipelines[1].duration = '1m 12s';
-
-    // Update KPI card for "Failed Runs"
-    DATA.kpis[3].value = '2';
-    DATA.kpis[3].delta = '+1';
-    const kpiCards = document.querySelectorAll('#kpi-grid .kpi-card');
-    if (kpiCards[3]) {
-      kpiCards[3].querySelector('.kpi-value').textContent = '2';
-      kpiCards[3].querySelector('.kpi-delta').innerHTML = '↓ +1';
+    /* ---- Pipeline selector tabs ---- */
+    function buildPipelineSelector() {
+      const wrap = document.getElementById('pl-selector');
+      wrap.innerHTML = '';
+      DATA.pipelines.forEach((p, i) => {
+        const sc = p.status.toLowerCase();
+        const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-running';
+        const btn = document.createElement('button');
+        btn.className = 'pl-tab' + (i === activePipelineIdx ? ' active' : '');
+        btn.innerHTML = `${p.name} <span class="status-pill ${cls}"><span class="dot"></span>${p.status}</span>`;
+        btn.onclick = () => { activePipelineIdx = i; selectedStepIdx = null; renderPipeline(); };
+        wrap.appendChild(btn);
+      });
     }
 
-    showToast('✅ Pipeline succeeded');
-  }, 2500);
-}
+    /* ---- Status header ---- */
+    function buildStatusBar() {
+      const p = DATA.pipelines[activePipelineIdx];
+      const sc = p.status.toLowerCase();
+      const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-running';
+      document.getElementById('pl-name').textContent = p.name;
+      document.getElementById('pl-pill').innerHTML = `<span class="status-pill ${cls}"><span class="dot"></span>${p.status}</span>`;
+      document.getElementById('pl-lastrun').textContent = `Last run: ${p.lastRun} · ${p.duration}`;
+    }
 
-/* ═══════════════════════════════════════════════════
-   PIPELINE DETAIL — full implementation
-═══════════════════════════════════════════════════ */
+    /* ══════════════════════════════════
+       DESKTOP — SVG Canvas
+    ══════════════════════════════════ */
+    const NODE_W = 184, NODE_H = 110, COL_GAP = 80, ROW_Y = 60;
+    // Steps arranged horizontally: x positions
 
-/* ---- shared state ---- */
-let selectedStepIdx = null;   // which step node is selected (desktop)
-let bsStepIdx = null;         // which step is open in bottom sheet (mobile)
+    function buildDesktopCanvas() {
+      const pipeline = DATA.pipelines[activePipelineIdx];
+      const steps = pipeline.steps;
+      const svg = document.getElementById('pl-svg');
+      const nodes = document.getElementById('pl-nodes');
+      svg.innerHTML = '';
+      nodes.innerHTML = '';
 
-/* ---- entry point called by switchView ---- */
-function renderPipeline() {
-  buildPipelineSelector();
-  buildStatusBar();
-  if (window.innerWidth >= 768) {
-    buildDesktopCanvas();
-  } else {
-    buildMobileStepper();
-  }
-}
+      const totalW = steps.length * (NODE_W + COL_GAP) - COL_GAP + 80;
+      const totalH = NODE_H + 120;
+      nodes.style.width = totalW + 'px';
+      nodes.style.height = totalH + 'px';
+      svg.setAttribute('width', totalW);
+      svg.setAttribute('height', totalH);
+      svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
 
-/* ---- Pipeline selector tabs ---- */
-function buildPipelineSelector() {
-  const wrap = document.getElementById('pl-selector');
-  wrap.innerHTML = '';
-  DATA.pipelines.forEach((p, i) => {
-    const sc = p.status.toLowerCase();
-    const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-running';
-    const btn = document.createElement('button');
-    btn.className = 'pl-tab' + (i === activePipelineIdx ? ' active' : '');
-    btn.innerHTML = `${p.name} <span class="status-pill ${cls}"><span class="dot"></span>${p.status}</span>`;
-    btn.onclick = () => { activePipelineIdx = i; selectedStepIdx = null; renderPipeline(); };
-    wrap.appendChild(btn);
-  });
-}
+      const positions = steps.map((_, i) => ({
+        x: 40 + i * (NODE_W + COL_GAP),
+        y: ROW_Y
+      }));
 
-/* ---- Status header ---- */
-function buildStatusBar() {
-  const p = DATA.pipelines[activePipelineIdx];
-  const sc = p.status.toLowerCase();
-  const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-running';
-  document.getElementById('pl-name').textContent = p.name;
-  document.getElementById('pl-pill').innerHTML = `<span class="status-pill ${cls}"><span class="dot"></span>${p.status}</span>`;
-  document.getElementById('pl-lastrun').textContent = `Last run: ${p.lastRun} · ${p.duration}`;
-}
+      // Draw curved SVG connectors between nodes
+      steps.forEach((step, i) => {
+        if (i === 0) return;
+        const from = positions[i - 1];
+        const to = positions[i];
+        const x1 = from.x + NODE_W;
+        const y1 = from.y + NODE_H / 2;
+        const x2 = to.x;
+        const y2 = to.y + NODE_H / 2;
+        const mx = (x1 + x2) / 2;
 
-/* ══════════════════════════════════
-   DESKTOP — SVG Canvas
-══════════════════════════════════ */
-const NODE_W = 184, NODE_H = 110, COL_GAP = 80, ROW_Y = 60;
-// Steps arranged horizontally: x positions
+        // Determine connector color
+        const prevStatus = steps[i - 1].status.toLowerCase();
+        const color = prevStatus === 'failed' ? '#E8455F'
+          : prevStatus === 'skipped' ? '#9BA8C3'
+            : '#D1DCF5';
 
-function buildDesktopCanvas() {
-  const pipeline = DATA.pipelines[activePipelineIdx];
-  const steps = pipeline.steps;
-  const svg   = document.getElementById('pl-svg');
-  const nodes = document.getElementById('pl-nodes');
-  svg.innerHTML = '';
-  nodes.innerHTML = '';
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+        path.setAttribute('stroke', color);
+        path.setAttribute('stroke-width', '2.5');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke-dasharray', prevStatus === 'skipped' ? '5 4' : 'none');
 
-  const totalW = steps.length * (NODE_W + COL_GAP) - COL_GAP + 80;
-  const totalH = NODE_H + 120;
-  nodes.style.width  = totalW + 'px';
-  nodes.style.height = totalH + 'px';
-  svg.setAttribute('width',  totalW);
-  svg.setAttribute('height', totalH);
-  svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
+        // Arrow head
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        const aw = 7;
+        const ax1 = x2 - aw * Math.cos(angle - 0.4);
+        const ay1 = y2 - aw * Math.sin(angle - 0.4);
+        const ax2 = x2 - aw * Math.cos(angle + 0.4);
+        const ay2 = y2 - aw * Math.sin(angle + 0.4);
+        const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        arrow.setAttribute('points', `${x2},${y2} ${ax1},${ay1} ${ax2},${ay2}`);
+        arrow.setAttribute('fill', color);
+        svg.appendChild(path);
+        svg.appendChild(arrow);
 
-  const positions = steps.map((_, i) => ({
-    x: 40 + i * (NODE_W + COL_GAP),
-    y: ROW_Y
-  }));
+        // Row-in → row-out badge on connector midpoint
+        const foreignEl = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+        foreignEl.setAttribute('x', mx - 28);
+        foreignEl.setAttribute('y', y1 - 11);
+        foreignEl.setAttribute('width', 56);
+        foreignEl.setAttribute('height', 22);
+        const span = document.createElement('span');
+        span.style.cssText = 'display:block;text-align:center;font-size:9px;font-weight:700;color:#9BA8C3;font-family:Plus Jakarta Sans,sans-serif;padding:3px 6px;background:#EEF2FB;border-radius:8px;white-space:nowrap;width:100%';
+        span.textContent = steps[i - 1].rowsOut.toLocaleString();
+        foreignEl.appendChild(span);
+        svg.appendChild(foreignEl);
+      });
 
-  // Draw curved SVG connectors between nodes
-  steps.forEach((step, i) => {
-    if (i === 0) return;
-    const from = positions[i - 1];
-    const to   = positions[i];
-    const x1 = from.x + NODE_W;
-    const y1 = from.y + NODE_H / 2;
-    const x2 = to.x;
-    const y2 = to.y + NODE_H / 2;
-    const mx = (x1 + x2) / 2;
+      // Draw nodes
+      steps.forEach((step, i) => {
+        const pos = positions[i];
+        const sc = step.status.toLowerCase();
+        const dotCls = sc === 'succeeded' ? 'dot-succeeded'
+          : sc === 'failed' ? 'dot-failed'
+            : sc === 'running' ? 'dot-running'
+              : 'dot-skipped';
+        const failedCard = sc === 'failed' ? ' failed-node' : '';
 
-    // Determine connector color
-    const prevStatus = steps[i - 1].status.toLowerCase();
-    const color = prevStatus === 'failed' ? '#E8455F'
-                : prevStatus === 'skipped' ? '#9BA8C3'
-                : '#D1DCF5';
+        const node = document.createElement('div');
+        node.className = 'pl-node';
+        node.style.left = pos.x + 'px';
+        node.style.top = pos.y + 'px';
+        node.dataset.idx = i;
+        if (i === selectedStepIdx) node.querySelector && null; // set after innerHTML
 
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
-    path.setAttribute('stroke', color);
-    path.setAttribute('stroke-width', '2.5');
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke-dasharray', prevStatus === 'skipped' ? '5 4' : 'none');
-
-    // Arrow head
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    const aw = 7;
-    const ax1 = x2 - aw * Math.cos(angle - 0.4);
-    const ay1 = y2 - aw * Math.sin(angle - 0.4);
-    const ax2 = x2 - aw * Math.cos(angle + 0.4);
-    const ay2 = y2 - aw * Math.sin(angle + 0.4);
-    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    arrow.setAttribute('points', `${x2},${y2} ${ax1},${ay1} ${ax2},${ay2}`);
-    arrow.setAttribute('fill', color);
-    svg.appendChild(path);
-    svg.appendChild(arrow);
-
-    // Row-in → row-out badge on connector midpoint
-    const foreignEl = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
-    foreignEl.setAttribute('x', mx - 28);
-    foreignEl.setAttribute('y', y1 - 11);
-    foreignEl.setAttribute('width', 56);
-    foreignEl.setAttribute('height', 22);
-    const span = document.createElement('span');
-    span.style.cssText = 'display:block;text-align:center;font-size:9px;font-weight:700;color:#9BA8C3;font-family:Plus Jakarta Sans,sans-serif;padding:3px 6px;background:#EEF2FB;border-radius:8px;white-space:nowrap;width:100%';
-    span.textContent = steps[i-1].rowsOut.toLocaleString();
-    foreignEl.appendChild(span);
-    svg.appendChild(foreignEl);
-  });
-
-  // Draw nodes
-  steps.forEach((step, i) => {
-    const pos = positions[i];
-    const sc = step.status.toLowerCase();
-    const dotCls = sc === 'succeeded' ? 'dot-succeeded'
-                 : sc === 'failed'    ? 'dot-failed'
-                 : sc === 'running'   ? 'dot-running'
-                 : 'dot-skipped';
-    const failedCard = sc === 'failed' ? ' failed-node' : '';
-
-    const node = document.createElement('div');
-    node.className = 'pl-node';
-    node.style.left = pos.x + 'px';
-    node.style.top  = pos.y + 'px';
-    node.dataset.idx = i;
-    if (i === selectedStepIdx) node.querySelector && null; // set after innerHTML
-
-    node.innerHTML = `
+        node.innerHTML = `
       <div class="pl-node-card${failedCard}${i === selectedStepIdx ? ' selected' : ''}" id="plnode-${i}">
         <div class="pl-node-dot ${dotCls}"></div>
         <div class="pl-node-icon">${step.icon}</div>
@@ -1281,71 +1029,71 @@ function buildDesktopCanvas() {
           <span class="pl-badge out${step.rowsOut === 0 && sc !== 'succeeded' ? ' zero' : ''}">↑ ${step.rowsOut.toLocaleString()}</span>
         </div>
       </div>`;
-    node.onclick = () => selectStep(i);
-    nodes.appendChild(node);
-  });
+        node.onclick = () => selectStep(i);
+        nodes.appendChild(node);
+      });
 
-  // Restore side panel
-  if (selectedStepIdx !== null) {
-    renderSidePanel(selectedStepIdx);
-  }
-}
+      // Restore side panel
+      if (selectedStepIdx !== null) {
+        renderSidePanel(selectedStepIdx);
+      }
+    }
 
-function selectStep(idx) {
-  selectedStepIdx = idx;
-  // Update node border highlights
-  document.querySelectorAll('.pl-node-card').forEach((el, i) => {
-    el.classList.toggle('selected', i === idx);
-  });
-  renderSidePanel(idx);
-}
+    function selectStep(idx) {
+      selectedStepIdx = idx;
+      // Update node border highlights
+      document.querySelectorAll('.pl-node-card').forEach((el, i) => {
+        el.classList.toggle('selected', i === idx);
+      });
+      renderSidePanel(idx);
+    }
 
-/* ---- Side panel ---- */
-function renderSidePanel(idx) {
-  const step = DATA.pipelines[activePipelineIdx].steps[idx];
-  const empty = document.getElementById('pl-panel-empty');
-  const content = document.getElementById('pl-panel-content');
-  empty.style.display = 'none';
-  content.style.display = 'flex';
+    /* ---- Side panel ---- */
+    function renderSidePanel(idx) {
+      const step = DATA.pipelines[activePipelineIdx].steps[idx];
+      const empty = document.getElementById('pl-panel-empty');
+      const content = document.getElementById('pl-panel-content');
+      empty.style.display = 'none';
+      content.style.display = 'flex';
 
-  const sc = step.status.toLowerCase();
-  const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-scheduled';
+      const sc = step.status.toLowerCase();
+      const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-scheduled';
 
-  document.getElementById('pl-panel-header').innerHTML = `
+      document.getElementById('pl-panel-header').innerHTML = `
     <h3>${step.icon} ${step.name}</h3>
     <div class="sub">⏱ ${step.duration} &nbsp;·&nbsp;
       <span class="status-pill ${cls}" style="font-size:11px;padding:2px 7px"><span class="dot"></span>${step.status}</span>
     </div>`;
 
-  document.getElementById('pl-panel-body').innerHTML = buildEditorHTML(idx, 'panel');
-  document.getElementById('pl-panel-footer').innerHTML = `
+      document.getElementById('pl-panel-body').innerHTML = buildEditorHTML(idx, 'panel');
+      document.getElementById('pl-panel-footer').innerHTML = `
     <button class="btn-ghost" style="flex:1;justify-content:center" onclick="plRerunFromStep()">
       <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.6"/></svg>
       Re-run from here
     </button>
     <button class="btn-primary" style="flex:1;justify-content:center" onclick="applyStepEdits(${idx},'panel')">Save</button>`;
-}
+    }
 
-/* ══════════════════════════════════
-   MOBILE — Vertical Stepper
-══════════════════════════════════ */
-function buildMobileStepper() {
-  const pipeline = DATA.pipelines[activePipelineIdx];
-  const wrap = document.getElementById('pl-stepper');
-  wrap.innerHTML = '';
+    /* ══════════════════════════════════
+       MOBILE — Vertical Stepper
+    ══════════════════════════════════ */
+    function buildMobileStepper() {
+      const pipeline = DATA.pipelines[activePipelineIdx];
+      const wrap = document.getElementById('pl-stepper');
+      wrap.innerHTML = '';
 
-  pipeline.steps.forEach((step, i) => {
-    const sc = step.status.toLowerCase();
-    const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-scheduled';
-    const failedCls = sc === 'failed' ? ' failed-m' : '';
-    const dotBg = sc === 'succeeded' ? 'var(--accent-green)'
-                : sc === 'failed'    ? 'var(--accent-coral)'
-                : sc === 'running'   ? 'var(--accent-blue)'
-                : 'var(--text-muted)';
+      pipeline.steps.forEach((step, i) => {
+        const sc = step.status.toLowerCase();
+        const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-scheduled';
+        const failedCls = sc === 'failed' ? ' failed-m' : '';
+        const dotBg = sc === 'succeeded' ? 'var(--accent-green)'
+          : sc === 'failed' ? 'var(--accent-coral)'
+            : sc === 'running' ? 'var(--accent-blue)'
+              : 'var(--text-muted)';
 
-    const row = document.createElement('div');
-    row.className = 'pl-stepper-row';
-    row.innerHTML = `
+        const row = document.createElement('div');
+        row.className = 'pl-stepper-row';
+        row.innerHTML = `
       <div class="pl-stepper-left">
         <div class="pl-stepper-dot-wrap" style="background:${dotBg}20;border-color:${dotBg}40">
           <span style="font-size:14px">${step.icon}</span>
@@ -1359,60 +1107,60 @@ function buildMobileStepper() {
         </div>
         <div class="pl-sc-badges">
           <span class="pl-badge in">↓ ${step.rowsIn.toLocaleString()}</span>
-          <span class="pl-badge out${step.rowsOut===0&&sc!=='succeeded'?' zero':''}">↑ ${step.rowsOut.toLocaleString()}</span>
+          <span class="pl-badge out${step.rowsOut === 0 && sc !== 'succeeded' ? ' zero' : ''}">↑ ${step.rowsOut.toLocaleString()}</span>
           <span class="pl-badge" style="background:var(--bg-input);color:var(--text-muted)">⏱ ${step.duration}</span>
         </div>
         ${step.error ? `<div style="margin-top:8px;font-size:11px;color:var(--accent-coral);font-weight:600">⚠ ${step.error.title}</div>` : ''}
       </div>`;
-    row.querySelector('.pl-stepper-card').onclick = () => openBS(i);
-    wrap.appendChild(row);
-  });
-}
+        row.querySelector('.pl-stepper-card').onclick = () => openBS(i);
+        wrap.appendChild(row);
+      });
+    }
 
-/* ══════════════════════════════════
-   SHARED EDITOR HTML
-══════════════════════════════════ */
-function buildEditorHTML(stepIdx, context) {
-  const p    = DATA.pipelines[activePipelineIdx];
-  const step = p.steps[stepIdx];
-  const sc   = step.status.toLowerCase();
-  const uid  = `${context}-${stepIdx}`;
-  const isEnabled = step.enabled !== false;
+    /* ══════════════════════════════════
+       SHARED EDITOR HTML
+    ══════════════════════════════════ */
+    function buildEditorHTML(stepIdx, context) {
+      const p = DATA.pipelines[activePipelineIdx];
+      const step = p.steps[stepIdx];
+      const sc = step.status.toLowerCase();
+      const uid = `${context}-${stepIdx}`;
+      const isEnabled = step.enabled !== false;
 
-  // Extra editable field depending on step type
-  let extraField = '';
-  if (step.name.toLowerCase().includes('filter')) {
-    extraField = `
+      // Extra editable field depending on step type
+      let extraField = '';
+      if (step.name.toLowerCase().includes('filter')) {
+        extraField = `
       <div class="field-group">
         <label class="field-label">Filter condition</label>
         <input id="${uid}-filter" class="field-input" type="text"
           value="${step.filterValue || 'CTR < 0.1%'}" placeholder="e.g. CTR < 0.5%"/>
       </div>`;
-  } else if (step.name.toLowerCase().includes('join')) {
-    extraField = `
+      } else if (step.name.toLowerCase().includes('join')) {
+        extraField = `
       <div class="field-group">
         <label class="field-label">Join key</label>
         <input id="${uid}-join" class="field-input" type="text"
           value="${step.joinKey || (step.error ? 'region_iso3' : 'video_id')}" placeholder="e.g. region_code"/>
       </div>`;
-  }
+      }
 
-  const errorHTML = step.error ? `
+      const errorHTML = step.error ? `
     <div class="pl-err-box">
       <strong>⚠ ${step.error.title}</strong>
       <p>${step.error.detail}</p>
     </div>` : '';
 
-  const logLines = sc === 'succeeded'
-    ? `<div class="log-ok">[OK]  ${step.rowsIn.toLocaleString()} → ${step.rowsOut.toLocaleString()} rows · ${step.duration}</div>
+      const logLines = sc === 'succeeded'
+        ? `<div class="log-ok">[OK]  ${step.rowsIn.toLocaleString()} → ${step.rowsOut.toLocaleString()} rows · ${step.duration}</div>
        <div class="log-inf">[INFO] ${step.note}</div>`
-    : sc === 'failed'
-    ? `<div class="log-inf">[INFO] ${step.note}</div>
+        : sc === 'failed'
+          ? `<div class="log-inf">[INFO] ${step.note}</div>
        <div class="log-err">[ERR]  ${step.error ? step.error.detail : 'Unknown error'}</div>
        <div class="log-err">[ABORT] 0 rows written</div>`
-    : `<div class="log-inf">[SKIP] ${step.note}</div>`;
+          : `<div class="log-inf">[SKIP] ${step.note}</div>`;
 
-  return `
+      return `
     <div class="field-group">
       <label class="field-label">Step name</label>
       <input id="${uid}-name" class="field-input" type="text" value="${step.name}"/>
@@ -1432,89 +1180,89 @@ function buildEditorHTML(stepIdx, context) {
       <label class="field-label">Rows in / out</label>
       <div style="display:flex;gap:8px">
         <span class="pl-badge in" style="padding:5px 10px;border-radius:8px;font-size:12px">↓ ${step.rowsIn.toLocaleString()}</span>
-        <span class="pl-badge out${step.rowsOut===0&&sc!=='succeeded'?' zero':''}" style="padding:5px 10px;border-radius:8px;font-size:12px">↑ ${step.rowsOut.toLocaleString()}</span>
+        <span class="pl-badge out${step.rowsOut === 0 && sc !== 'succeeded' ? ' zero' : ''}" style="padding:5px 10px;border-radius:8px;font-size:12px">↑ ${step.rowsOut.toLocaleString()}</span>
       </div>
     </div>
     <div class="field-group">
       <label class="field-label">Log output</label>
       <div class="pl-log">${logLines}</div>
     </div>`;
-}
+    }
 
-/* ══════════════════════════════════
-   EDIT ACTIONS
-══════════════════════════════════ */
-function applyStepEdits(stepIdx, context) {
-  const step = DATA.pipelines[activePipelineIdx].steps[stepIdx];
-  const uid  = `${context}-${stepIdx}`;
+    /* ══════════════════════════════════
+       EDIT ACTIONS
+    ══════════════════════════════════ */
+    function applyStepEdits(stepIdx, context) {
+      const step = DATA.pipelines[activePipelineIdx].steps[stepIdx];
+      const uid = `${context}-${stepIdx}`;
 
-  const nameEl = document.getElementById(`${uid}-name`);
-  if (nameEl && nameEl.value.trim()) step.name = nameEl.value.trim();
+      const nameEl = document.getElementById(`${uid}-name`);
+      if (nameEl && nameEl.value.trim()) step.name = nameEl.value.trim();
 
-  const filterEl = document.getElementById(`${uid}-filter`);
-  if (filterEl) step.filterValue = filterEl.value;
+      const filterEl = document.getElementById(`${uid}-filter`);
+      if (filterEl) step.filterValue = filterEl.value;
 
-  const joinEl = document.getElementById(`${uid}-join`);
-  if (joinEl) step.joinKey = joinEl.value;
+      const joinEl = document.getElementById(`${uid}-join`);
+      if (joinEl) step.joinKey = joinEl.value;
 
-  showToast('✅ Step updated');
-  // Rebuild canvas/stepper to reflect name change
-  if (window.innerWidth >= 768) buildDesktopCanvas();
-  else buildMobileStepper();
-}
+      showToast('✅ Step updated');
+      // Rebuild canvas/stepper to reflect name change
+      if (window.innerWidth >= 768) buildDesktopCanvas();
+      else buildMobileStepper();
+    }
 
-function toggleStepEnabled(stepIdx, val, context) {
-  DATA.pipelines[activePipelineIdx].steps[stepIdx].enabled = val;
-  showToast(val ? '✅ Step enabled' : '⏸ Step disabled');
-}
+    function toggleStepEnabled(stepIdx, val, context) {
+      DATA.pipelines[activePipelineIdx].steps[stepIdx].enabled = val;
+      showToast(val ? '✅ Step enabled' : '⏸ Step disabled');
+    }
 
-/* ══════════════════════════════════
-   RE-RUN
-══════════════════════════════════ */
-function plRerun() {
-  const p = DATA.pipelines[activePipelineIdx];
-  if (p.status === 'Running') return;
-  const btn = document.getElementById('pl-rerun-btn');
-  btn.disabled = true;
-  p.status = 'Running';
-  p.steps.forEach(s => { if (s.status !== 'Succeeded') s.status = 'Running'; });
-  buildStatusBar();
-  if (window.innerWidth >= 768) buildDesktopCanvas(); else buildMobileStepper();
+    /* ══════════════════════════════════
+       RE-RUN
+    ══════════════════════════════════ */
+    function plRerun() {
+      const p = DATA.pipelines[activePipelineIdx];
+      if (p.status === 'Running') return;
+      const btn = document.getElementById('pl-rerun-btn');
+      btn.disabled = true;
+      p.status = 'Running';
+      p.steps.forEach(s => { if (s.status !== 'Succeeded') s.status = 'Running'; });
+      buildStatusBar();
+      if (window.innerWidth >= 768) buildDesktopCanvas(); else buildMobileStepper();
 
-  setTimeout(() => {
-    p.status = 'Succeeded';
-    p.steps.forEach(s => {
-      s.status = 'Succeeded';
-      if (s.rowsOut === 0 && s.rowsIn > 0) s.rowsOut = s.rowsIn;
-      s.error = null;
-    });
-    p.lastRun = '2026-11-04 ' + new Date().toTimeString().slice(0,5);
-    p.duration = '1m 02s';
-    btn.disabled = false;
-    buildStatusBar();
-    buildPipelineSelector();
-    if (window.innerWidth >= 768) buildDesktopCanvas(); else buildMobileStepper();
-    showToast('✅ Pipeline succeeded');
-  }, 2600);
-}
+      setTimeout(() => {
+        p.status = 'Succeeded';
+        p.steps.forEach(s => {
+          s.status = 'Succeeded';
+          if (s.rowsOut === 0 && s.rowsIn > 0) s.rowsOut = s.rowsIn;
+          s.error = null;
+        });
+        p.lastRun = '2026-11-04 ' + new Date().toTimeString().slice(0, 5);
+        p.duration = '1m 02s';
+        btn.disabled = false;
+        buildStatusBar();
+        buildPipelineSelector();
+        if (window.innerWidth >= 768) buildDesktopCanvas(); else buildMobileStepper();
+        showToast('✅ Pipeline succeeded');
+      }, 2600);
+    }
 
-function plRerunFromStep() {
-  const idx = selectedStepIdx !== null ? selectedStepIdx : bsStepIdx;
-  if (idx === null) return;
-  showToast(`⚡ Re-running from "${DATA.pipelines[activePipelineIdx].steps[idx].name}"…`);
-  setTimeout(() => plRerun(), 400);
-}
+    function plRerunFromStep() {
+      const idx = selectedStepIdx !== null ? selectedStepIdx : bsStepIdx;
+      if (idx === null) return;
+      showToast(`⚡ Re-running from "${DATA.pipelines[activePipelineIdx].steps[idx].name}"…`);
+      setTimeout(() => plRerun(), 400);
+    }
 
-/* ══════════════════════════════════
-   BOTTOM SHEET (mobile)
-══════════════════════════════════ */
-function openBS(stepIdx) {
-  bsStepIdx = stepIdx;
-  const step = DATA.pipelines[activePipelineIdx].steps[stepIdx];
-  document.getElementById('bs-title').textContent = step.icon + ' ' + step.name;
-  document.getElementById('bs-body').innerHTML = buildEditorHTML(stepIdx, 'bs');
-  // Add inline Save button to footer
-  document.getElementById('bs-foot').innerHTML = `
+    /* ══════════════════════════════════
+       BOTTOM SHEET (mobile)
+    ══════════════════════════════════ */
+    function openBS(stepIdx) {
+      bsStepIdx = stepIdx;
+      const step = DATA.pipelines[activePipelineIdx].steps[stepIdx];
+      document.getElementById('bs-title').textContent = step.icon + ' ' + step.name;
+      document.getElementById('bs-body').innerHTML = buildEditorHTML(stepIdx, 'bs');
+      // Add inline Save button to footer
+      document.getElementById('bs-foot').innerHTML = `
     <button class="btn-primary bs-rerun" onclick="applyStepEdits(${stepIdx},'bs');closeBS()">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
       Save changes
@@ -1524,33 +1272,34 @@ function openBS(stepIdx) {
       Re-run from this step
     </button>
     <button class="btn-ghost" style="justify-content:center" onclick="closeBS()">Dismiss</button>`;
-  document.getElementById('bs-overlay').classList.add('open');
-}
+      document.getElementById('bs-overlay').classList.add('open');
+    }
 
-function closeBS() {
-  document.getElementById('bs-overlay').classList.remove('open');
-  bsStepIdx = null;
-}
+    function closeBS() {
+      document.getElementById('bs-overlay').classList.remove('open');
+      bsStepIdx = null;
+    }
 
-/* Swipe-down to close */
-(function setupBSSwipe() {
-  let startY = 0;
-  document.addEventListener('DOMContentLoaded', () => {
-    const drag = document.getElementById('bs-drag');
-    const sheet = document.getElementById('bs-sheet');
-    if (!drag || !sheet) return;
-    drag.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
-    drag.addEventListener('touchmove', e => {
-      const dy = e.touches[0].clientY - startY;
-      if (dy > 0) sheet.style.transform = `translateY(${dy}px)`;
-    }, { passive: true });
-    drag.addEventListener('touchend', e => {
-      const dy = e.changedTouches[0].clientY - startY;
-      if (dy > 80) { closeBS(); }
-      sheet.style.transform = '';
-    });
-  });
-})();
-</script>
+    /* Swipe-down to close */
+    (function setupBSSwipe() {
+      let startY = 0;
+      document.addEventListener('DOMContentLoaded', () => {
+        const drag = document.getElementById('bs-drag');
+        const sheet = document.getElementById('bs-sheet');
+        if (!drag || !sheet) return;
+        drag.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, { passive: true });
+        drag.addEventListener('touchmove', e => {
+          const dy = e.touches[0].clientY - startY;
+          if (dy > 0) sheet.style.transform = `translateY(${dy}px)`;
+        }, { passive: true });
+        drag.addEventListener('touchend', e => {
+          const dy = e.changedTouches[0].clientY - startY;
+          if (dy > 80) { closeBS(); }
+          sheet.style.transform = '';
+        });
+      });
+    })();
+  </script>
 </body>
+
 </html>
