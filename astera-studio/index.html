@@ -571,14 +571,16 @@
       }
     };
 
+    DATA.pipelines.forEach(p => p.nextRun = '6:00 PM');
+
     /* ═══════════════════════════════════════════════════
        STATE
     ═══════════════════════════════════════════════════ */
     let activeView = 'chat';
     let activePipelineIdx = 1;
-    let pipelineStatus = 'Failed';      // tracks re-run state
-    let pinnedCharts = [];               // chat → dashboard pins
-    let chartInstances = {};             // track Chart.js instances for cleanup
+    let dashFreshness = 'Updated 12 min ago';
+    let pinnedCharts = [];                          // chat → dashboard pins
+    let chartInstances = {};                        // track Chart.js instances for cleanup
 
     /* ═══════════════════════════════════════════════════
        NAVIGATION
@@ -1086,7 +1088,7 @@
         const cls = sc === 'succeeded' ? 'pill-succeeded' : sc === 'failed' ? 'pill-failed' : 'pill-running';
         const btn = document.createElement('button');
         btn.className = 'pl-tab' + (i === activePipelineIdx ? ' active' : '');
-        btn.innerHTML = `${p.name} <span class="status-pill ${cls}"><span class="dot"></span>${p.status}</span>`;
+        btn.innerHTML = `${statusDot(p.status)} ${p.name}`;
         btn.onclick = () => { activePipelineIdx = i; selectedStepIdx = null; renderPipeline(); };
         wrap.appendChild(btn);
       });
@@ -1280,8 +1282,8 @@
       <div class="pl-stepper-card${failedCls}" data-idx="${i}">
         <div class="pl-sc-header">
           <span class="pl-sc-name">${step.name}</span>
-          <span class="status-pill ${cls}" style="font-size:11px"><span class="dot"></span>${step.status}</span>
-        </div>
+          ${sc === 'succeeded' ? statusDot(step.status) : `<span class="status-pill ${cls}" style="font-size:11px"><span class="dot"></span>${step.status}</span>`}
+          </div>
         <div class="pl-sc-badges">
           <span class="pl-badge in">↓ ${step.rowsIn.toLocaleString()}</span>
           <span class="pl-badge out${step.rowsOut === 0 && sc !== 'succeeded' ? ' zero' : ''}">↑ ${step.rowsOut.toLocaleString()}</span>
@@ -1477,6 +1479,108 @@
         });
       });
     })();
+
+    /* ===== Shared status helpers ===== */
+    function statusPill(status) {
+      const cls = { Succeeded: 'pill-succeeded', Failed: 'pill-failed', Running: 'pill-running' }[status] || 'pill-scheduled';
+      return `<span class="status-pill ${cls}"><span class="dot"></span>${status}</span>`;
+    }
+    function nextRunPill(p) {
+      return (p.status === 'Succeeded' && p.nextRun)
+        ? `<span class="status-pill pill-scheduled"><span class="dot"></span>Scheduled \u00b7 ${p.nextRun}</span>` : '';
+    }
+
+    /* ===== Dashboard (always reads pipeline #1, the Fiverr sync) ===== */
+    function renderDashStatusPill() {
+      const p = DATA.pipelines[1];
+      document.getElementById('dash-status-pill').innerHTML = statusPill(p.status) + nextRunPill(p);
+      document.getElementById('dash-freshness').textContent = dashFreshness;
+    }
+    function renderFailBanner() {
+      document.getElementById('fail-banner').style.display = DATA.pipelines[1].status === 'Failed' ? 'flex' : 'none';
+    }
+    function renderKPIs() {
+      const grid = document.getElementById('kpi-grid');
+      grid.innerHTML = '';
+      DATA.kpis.forEach(k => {
+        const c = document.createElement('div');
+        c.className = 'card kpi-card';
+        c.innerHTML = `<div class="icon-tile ${k.tile}">${k.icon}</div>
+      <div>
+        <div class="kpi-label">${k.label}</div>
+        <div class="kpi-value">${k.value}</div>
+        <span class="kpi-delta ${k.trend}">${k.trend === 'up' ? '\u2191' : '\u2193'} ${k.delta}</span>
+      </div>`;
+        grid.appendChild(c);
+      });
+    }
+
+    /* ===== Pipelines tab status bar ===== */
+    function buildStatusBar() {
+      const p = DATA.pipelines[activePipelineIdx];
+      document.getElementById('pl-name').textContent = p.name;
+      document.getElementById('pl-pill').innerHTML = statusPill(p.status) + nextRunPill(p);
+      document.getElementById('pl-lastrun').textContent = `Last run: ${p.lastRun} \u00b7 ${p.duration}`;
+      document.getElementById('pl-rerun-btn').disabled = p.status === 'Running';
+    }
+
+    /* ===== One re-run engine for both tabs ===== */
+    function refreshStatusViews() {
+      renderDashStatusPill();
+      renderFailBanner();
+      renderKPIs();
+      const running = DATA.pipelines[1].status === 'Running';
+      const rb = document.getElementById('rerun-btn');
+      rb.disabled = running;
+      rb.textContent = running ? 'Running\u2026' : 'Re-run';
+      if (activeView === 'pipeline') renderPipeline();
+    }
+
+    function runPipeline(idx) {
+      const p = DATA.pipelines[idx];
+      if (p.status === 'Running') return;
+      p.status = 'Running';
+      p.steps.forEach(s => { if (s.status !== 'Succeeded') s.status = 'Running'; });
+      refreshStatusViews();
+
+      setTimeout(() => {
+        p.steps.forEach((s, i) => {
+          if (i > 0) s.rowsIn = p.steps[i - 1].rowsOut;
+          if (s.error && !s.joinKey && /join/i.test(s.name)) s.joinKey = 'region_code';
+          s.status = 'Succeeded';
+          if (s.rowsOut === 0) s.rowsOut = s.rowsIn;
+          s.error = null;
+        });
+        p.status = 'Succeeded';
+        p.rowsOut = p.steps[p.steps.length - 1].rowsOut;
+        p.lastRun = '2026-11-04 ' + new Date().toTimeString().slice(0, 5);
+        p.duration = '1m 02s';
+        if (idx === 1) {
+          dashFreshness = 'Updated just now';
+          DATA.kpis[3].value = '2';
+          DATA.kpis[3].delta = '+1';
+        }
+        refreshStatusViews();
+        showToast('Pipeline succeeded');
+      }, 2500);
+    }
+
+    function handleRerun() { runPipeline(1); }              // dashboard button
+    function plRerun() { runPipeline(activePipelineIdx); } // pipelines tab button
+
+    function plRerunFromStep() {
+      const idx = selectedStepIdx !== null ? selectedStepIdx : bsStepIdx;
+      if (idx === null) return;
+      const name = DATA.pipelines[activePipelineIdx].steps[idx].name;
+      closeBS();                                  // so the phone user can see the run
+      showToast('Re-running from "' + name + '"...');
+      setTimeout(plRerun, 400);
+    }
+
+    function statusDot(status) {
+      return `<span class="status-dot s-${status.toLowerCase()}" role="img" aria-label="${status}" title="${status}"></span>`;
+    }
+
   </script>
 </body>
 
